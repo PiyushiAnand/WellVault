@@ -64,6 +64,12 @@ CREATE TABLE LabReports (
     FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE
 );
 
+CREATE TABLE Slots (
+    slot_id SERIAL PRIMARY KEY,  -- AUTO_INCREMENT replaced with SERIAL
+    time TIME NOT NULL,
+    timings VARCHAR(10) NOT NULL CHECK (timings IN ('8:30', '9:30', '10:30', '11:30', '12:30'))  -- ENUM replaced with CHECK constraint
+);
+
 CREATE TABLE Appointments (
     apt_id SERIAL PRIMARY KEY,  -- AUTO_INCREMENT replaced with SERIAL
     username VARCHAR(50) NOT NULL,
@@ -111,8 +117,4 @@ CREATE TABLE Doctors (
     FOREIGN KEY (hosp_id) REFERENCES Hospitals(hosp_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Slots (
-    slot_id SERIAL PRIMARY KEY,  -- AUTO_INCREMENT replaced with SERIAL
-    time TIME NOT NULL,
-    timings VARCHAR(10) NOT NULL CHECK (timings IN ('8:30', '9:30', '10:30', '11:30', '12:30'))  -- ENUM replaced with CHECK constraint
-);
+
