@@ -1,6 +1,6 @@
 ## DBIS PROJECT 
 
-This repository is privately owned by Piyushi, Mithila, Urvi and Aakriti. It comprises of a web app, with reference of the website ABHA. It's medical app to keep a track on your health records, bills, ongoing treatments, insurance and appointments
+This repository is privately owned by Piyushi, Mithila, Urvi and Aakriti. It comprises of a web app, with reference of the website ABHA. It's a medical app to keep a track on your health records, bills, ongoing treatments, insurance and appointments.
 
 # FRONTEND SETUP
 
