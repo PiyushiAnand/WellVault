@@ -9,10 +9,10 @@ CREATE TABLE Users (
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     DOB DATE NOT NULL,
-    mobile_number VARCHAR(15) NOT NULL UNIQUE,
+    mobile_number VARCHAR(10) NOT NULL UNIQUE,
     gender gender_enum NOT NULL,
     address TEXT NOT NULL,
-    emergency_contact VARCHAR(15) NOT NULL
+    emergency_contact VARCHAR(10) NOT NULL
 );
 
 CREATE TABLE UserHealthData (
