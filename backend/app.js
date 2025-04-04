@@ -100,6 +100,7 @@ app.post("/login", async (req, res) => {
       req.session.username = user.username;
       res.status(200).json({ message: "Login successful" });
     } else {
+        console.log("Invalid credentials");
       res.status(400).json({ message: "Invalid credentials" });
     }
   } catch (err) {
