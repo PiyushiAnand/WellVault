@@ -7,7 +7,7 @@ import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 import CoverLayout from "layouts/authentication/components/CoverLayout";
-import bgImage from "assets/images/bg-sign-up-cover.jpeg";
+import bgImage from "assets/images/bgsignup.jpg";
 import { apiUrl } from "../../../config/config.js";
 
 const Cover = () => {
@@ -17,7 +17,7 @@ const Cover = () => {
   
   const [formData, setFormData] = useState({
     username: "",
-    password: "",  // Use `password`, not `password_hash`
+    password: "",
     name: "",
     dob: "",
     mobile_number: "",
@@ -43,17 +43,14 @@ const Cover = () => {
     checkStatus();
   }, [navigate]);
 
-  // Handle input change
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error when user modifies any field
     setError(null);
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting:", formData);
@@ -70,7 +67,7 @@ const Cover = () => {
       if (response.ok) {
         setSuccess(data.message);
         setError(null);
-        navigate("/dashboard") // Redirect after success
+        navigate("/dashboard");
       } else {
         setError(data.message);
       }
@@ -78,6 +75,29 @@ const Cover = () => {
       setError("Signup failed. Please try again.");
       console.error("Error:", error);
     }
+  };
+
+  const showTermsAlert = () => {
+    alert(`Terms and Conditions
+
+Welcome to WellVault. By signing up and using our health platform ("Service"), you agree to be bound by the following Terms and Conditions. Please read them carefully.
+
+1. Eligibility
+By using this website, you confirm that:
+- You are at least 18 years old or have the permission of a parent or guardian.
+- The information you provide is accurate and truthful.
+
+2. Services Provided
+Our platform allows you to:
+- Store and manage your digital medical records.
+- Track ongoing treatments and medical history.
+- Connect to hospitals and healthcare providers for emergencies and checkups.
+- Share your medical information securely with authorized medical personnel.
+
+3. Privacy and Data Protection
+- All your medical and personal information will be stored securely and in compliance with applicable data protection laws.
+- We do not sell your data to third parties.
+- You have control over who can access your information.`);
   };
 
   return (
@@ -113,8 +133,7 @@ const Cover = () => {
               <MDInput type="text" label="Name" name="name" fullWidth onChange={handleChange} value={formData.name} />
             </MDBox>
             <MDBox mb={2}>
-            
-              <MDInput type="date"  name="dob" fullWidth onChange={handleChange} value={formData.dob} />
+              <MDInput type="date" name="dob" fullWidth onChange={handleChange} value={formData.dob} />
             </MDBox>
             <MDBox mb={2}>
               <MDInput type="text" label="Mobile Number" name="mobile_number" fullWidth onChange={handleChange} value={formData.mobile_number} />
@@ -124,15 +143,13 @@ const Cover = () => {
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
+                className="w-[300px] p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
             </MDBox>
-             {/* <MDBox mb={2}>
-              <MDInput type="text" label="Gender" name="gender" fullWidth onChange={handleChange} value={formData.gender} />
-            </MDBox> */}
             <MDBox mb={2}>
               <MDInput type="text" label="Address" name="address" fullWidth onChange={handleChange} value={formData.address} />
             </MDBox>
@@ -144,17 +161,24 @@ const Cover = () => {
               <MDTypography variant="button" fontWeight="regular" color="text">
                 &nbsp;I agree to the&nbsp;
               </MDTypography>
-              <MDTypography component="a" href="#" variant="button" fontWeight="bold" color="info">
+              <MDTypography
+                component="span"
+                onClick={showTermsAlert}
+                variant="button"
+                fontWeight="bold"
+                color="info"
+                style={{ cursor: "pointer" }}
+              >
                 Terms and Conditions
               </MDTypography>
             </MDBox>
             {error && <MDTypography color="error">{error}</MDTypography>}
             {success && <MDTypography color="success">{success}</MDTypography>}
-            
-              <MDButton variant="gradient" color="info" fullWidth type="submit">
-                              Sign Up
-                </MDButton>
-              
+
+            <MDButton variant="gradient" color="info" fullWidth type="submit">
+              Sign Up
+            </MDButton>
+
             <MDBox mt={3} mb={1} textAlign="center">
               <MDTypography variant="button" color="text">
                 Already have an account?{" "}
