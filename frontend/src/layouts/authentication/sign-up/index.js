@@ -70,7 +70,7 @@ const Cover = () => {
       if (response.ok) {
         setSuccess(data.message);
         setError(null);
-        setTimeout(() => navigate("/dashboard"), 2000); // Redirect after success
+        navigate("/dashboard") // Redirect after success
       } else {
         setError(data.message);
       }
@@ -113,34 +113,26 @@ const Cover = () => {
               <MDInput type="text" label="Name" name="name" fullWidth onChange={handleChange} value={formData.name} />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="date" label="DOB" name="dob" fullWidth onChange={handleChange} value={formData.dob} />
+            
+              <MDInput type="date"  name="dob" fullWidth onChange={handleChange} value={formData.dob} />
             </MDBox>
             <MDBox mb={2}>
               <MDInput type="text" label="Mobile Number" name="mobile_number" fullWidth onChange={handleChange} value={formData.mobile_number} />
             </MDBox>
             <MDBox mb={2}>
-              <MDTypography variant="caption" color="text" fontWeight="medium" gutterBottom>
-                Gender
-              </MDTypography>
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                  backgroundColor: "#fff",
-                  fontSize: "1rem",
-                }}
               >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
             </MDBox>
-
+             {/* <MDBox mb={2}>
+              <MDInput type="text" label="Gender" name="gender" fullWidth onChange={handleChange} value={formData.gender} />
+            </MDBox> */}
             <MDBox mb={2}>
               <MDInput type="text" label="Address" name="address" fullWidth onChange={handleChange} value={formData.address} />
             </MDBox>
@@ -159,9 +151,9 @@ const Cover = () => {
             {error && <MDTypography color="error">{error}</MDTypography>}
             {success && <MDTypography color="success">{success}</MDTypography>}
             
-              <button type="submit">
-                Sign Up
-              </button>
+              <MDButton variant="gradient" color="info" fullWidth type="submit">
+                              Sign Up
+                </MDButton>
               
             <MDBox mt={3} mb={1} textAlign="center">
               <MDTypography variant="button" color="text">

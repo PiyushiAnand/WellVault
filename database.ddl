@@ -1,3 +1,22 @@
+-- Drop Tables if they exist
+DROP TABLE IF EXISTS Doctors CASCADE;
+DROP TABLE IF EXISTS Hospitals CASCADE;
+DROP TABLE IF EXISTS InsurerData CASCADE;
+DROP TABLE IF EXISTS Insurance CASCADE;
+DROP TABLE IF EXISTS Appointments CASCADE;
+DROP TABLE IF EXISTS Slots CASCADE;
+DROP TABLE IF EXISTS LabReports CASCADE;
+DROP TABLE IF EXISTS MedicalHistory CASCADE;
+DROP TABLE IF EXISTS OngoingMedication CASCADE;
+DROP TABLE IF EXISTS Vaccines CASCADE;
+DROP TABLE IF EXISTS UserHealthData CASCADE;
+DROP TABLE IF EXISTS Users CASCADE;
+
+-- Drop ENUM types if they exist
+DROP TYPE IF EXISTS gender_enum;
+DROP TYPE IF EXISTS blood_group_enum;
+DROP TYPE IF EXISTS hospital_type_enum;
+
 -- ENUM types must be created first in PostgreSQL
 CREATE TYPE gender_enum AS ENUM ('Male', 'Female', 'Other');
 CREATE TYPE blood_group_enum AS ENUM ('A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-');
@@ -9,10 +28,10 @@ CREATE TABLE Users (
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     DOB DATE NOT NULL,
-    mobile_number VARCHAR(15) NOT NULL UNIQUE,
+    mobile_number VARCHAR(10) NOT NULL UNIQUE,
     gender gender_enum NOT NULL,
     address TEXT NOT NULL,
-    emergency_contact VARCHAR(15) NOT NULL
+    emergency_contact VARCHAR(10) NOT NULL
 );
 
 CREATE TABLE UserHealthData (
@@ -29,7 +48,7 @@ CREATE TABLE Vaccines (
     username VARCHAR(50) NOT NULL,
     vaccine_name VARCHAR(100) NOT NULL,
     no_of_dose INT CHECK (no_of_dose > 0),
-    year_administered INT NOT NULL,  -- YEAR replaced with INT
+    year_administered INT NOT NULL,  
     administering_hospital VARCHAR(100) NULL,
     PRIMARY KEY (username, vaccine_name),
     FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE
@@ -56,34 +75,33 @@ CREATE TABLE MedicalHistory (
 );
 
 CREATE TABLE LabReports (
-    report_id SERIAL, -- Auto-increment primary key
+    report_id SERIAL PRIMARY KEY,  
     username VARCHAR(50) NOT NULL,
     data TEXT NOT NULL,
-    report_file BYTEA NOT NULL,  -- LONGBLOB replaced with BYTEA
-    PRIMARY KEY (report_id, username),
+    report_file BYTEA NOT NULL,  
     FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE
 );
 
 CREATE TABLE Slots (
-    slot_id SERIAL PRIMARY KEY,  -- AUTO_INCREMENT replaced with SERIAL
+    slot_id SERIAL PRIMARY KEY,  
     time TIME NOT NULL,
-    timings VARCHAR(10) NOT NULL CHECK (timings IN ('8:30', '9:30', '10:30', '11:30', '12:30'))  -- ENUM replaced with CHECK constraint
+    timings VARCHAR(10) NOT NULL CHECK (timings IN ('8:30', '9:30', '10:30', '11:30', '12:30'))
 );
 
 CREATE TABLE Appointments (
-    apt_id SERIAL PRIMARY KEY,  -- AUTO_INCREMENT replaced with SERIAL
+    apt_id SERIAL PRIMARY KEY,  
     username VARCHAR(50) NOT NULL,
     hospital_name VARCHAR(100) NOT NULL,
     doctor_name VARCHAR(100) NOT NULL,
     appointment_date DATE NOT NULL,
-    slot_id INT NOT NULL,  -- Fixed incorrect PRIMARY KEY usage
+    slot_id INT NOT NULL,  
     FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE,
     FOREIGN KEY (slot_id) REFERENCES Slots(slot_id)
 );
 
 -- INSURANCE DATA
 CREATE TABLE Insurance (
-    insurance_id SERIAL PRIMARY KEY,  -- AUTO_INCREMENT replaced with SERIAL
+    insurance_id SERIAL PRIMARY KEY,  
     username VARCHAR(50) NOT NULL,
     provider_name VARCHAR(100) NOT NULL,
     policy_number VARCHAR(50) NOT NULL UNIQUE,
@@ -101,7 +119,7 @@ CREATE TABLE InsurerData (
 
 -- HOSPITAL DATA
 CREATE TABLE Hospitals (
-    hosp_id SERIAL PRIMARY KEY,  -- AUTO_INCREMENT replaced with SERIAL
+    hosp_id SERIAL PRIMARY KEY,  
     hospital_name VARCHAR(100) NOT NULL,
     pincode VARCHAR(10) NOT NULL,
     type hospital_type_enum NOT NULL,
@@ -110,11 +128,10 @@ CREATE TABLE Hospitals (
 );
 
 CREATE TABLE Doctors (
-    doc_id SERIAL PRIMARY KEY,  -- AUTO_INCREMENT replaced with SERIAL
+    doc_id SERIAL PRIMARY KEY,  
     hosp_id INT NOT NULL,
     doc_name VARCHAR(100) NOT NULL,
     speciality VARCHAR(100) NOT NULL,
     FOREIGN KEY (hosp_id) REFERENCES Hospitals(hosp_id) ON DELETE CASCADE
 );
-
 

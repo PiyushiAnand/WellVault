@@ -39,6 +39,17 @@ app.use(
   })
 );
 
+
+const isValidDate = (dateString) => {
+    const dob = new Date(dateString);
+    const today = new Date();
+  
+    if (isNaN(dob.getTime())) return false; // Invalid date format
+    if (dob >= today) return false; // Future dates not allowed
+  
+    return true;
+  };
+
 /////////////////////////////////////////////////////////////
 // Authentication APIs
 // Signup, Login, IsLoggedIn and Logout
@@ -55,6 +66,18 @@ function isAuthenticated(req, res, next) {
 app.post("/signup", async (req, res) => {
     const { username, password, name, dob, mobile_number, gender, address, emergency_contact } = req.body;
     const password_hash = await bcrypt.hash(password, 10);
+    if (!/^\d{10}$/.test(mobile_number)) {
+        return res.status(400).json({ message: "Mobile number must be exactly 10 digits" });
+      }
+      if (!/^\d{10}$/.test(emergency_contact)) {
+        return res.status(400).json({ message: "Emergency number must be exactly 10 digits" });
+      }
+    if(mobile_number === emergency_contact) {
+        return res.status(400).json({ message: "Mobile number and emergency contact cannot be the same" });
+    }
+    if(!isValidDate(dob)) {
+        return res.status(400).json({ message: "Invalid date of birth" });
+    }
   
     try {
       await pool.query(
