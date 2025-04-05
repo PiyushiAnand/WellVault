@@ -95,7 +95,7 @@ const Cover = () => {
           textAlign="center"
         >
           <MDTypography variant="h4" fontWeight="medium" color="white" mt={1}>
-            Join us today
+           Join us today
           </MDTypography>
           <MDTypography display="block" variant="button" color="white" my={1}>
             Enter your details to get started
@@ -120,15 +120,17 @@ const Cover = () => {
               <MDInput type="text" label="Mobile Number" name="mobile_number" fullWidth onChange={handleChange} value={formData.mobile_number} />
             </MDBox>
             <MDBox mb={2}>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+                        <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-[300px] p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+>
+            
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
             </MDBox>
              {/* <MDBox mb={2}>
               <MDInput type="text" label="Gender" name="gender" fullWidth onChange={handleChange} value={formData.gender} />

@@ -33,12 +33,10 @@ import MDButton from "components/MDButton";
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 
 // Images
-import bgImage from "assets/images/bg-sign-in-basic.jpeg";
+import bgImage from "assets/images/bgsignin.jpg";
 import { apiUrl } from "../../../config/config.js";
 
 function Basic() {
-  const [rememberMe, setRememberMe] = useState(false);
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -153,18 +151,6 @@ function Basic() {
               </MDBox>
             )}
 
-            <MDBox display="flex" alignItems="center" ml={-1}>
-              <Switch checked={rememberMe} onChange={handleSetRememberMe} />
-              <MDTypography
-                variant="button"
-                fontWeight="regular"
-                color="text"
-                onClick={handleSetRememberMe}
-                sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
-              >
-                &nbsp;&nbsp;Remember me
-              </MDTypography>
-            </MDBox>
 
             <MDBox mt={2} mb={1}>
               <MDButton variant="gradient" color="info" fullWidth type="submit">
