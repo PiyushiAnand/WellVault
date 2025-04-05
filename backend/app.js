@@ -158,9 +158,133 @@ app.listen(port, () => {
   
 
 
-// /profile
+// /dashboard
 // user health data display 
+// display vaccines (maybe top three with a scrolling thingy)
+
+// app.get("/profile", isAuthenticated, async(req,res) => {
+//   try {
+//     const user_name = req.session.username;
+//     user_query = `SELECT * FROM Users WHERE username = $1;`;
+//     user_res = await pool.query(user_query, [user_name]);
+
+//     if (user_res.rows.length === 0) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     const user = user_res.rows[0];
+
+//     record_query = `SELECT * FROM UserHealthData WHERE username = $1;`;
+//     record_res = await pool.query(record_query, [user_name]);
+//     if (record_res.rows.length === 0) {
+//       return res.status(404).json({ message: "No health records found" });
+//     }
+//     const records = record_res.rows[0];
+
+//     res.render("profile", { user, records });
+
+//   }
+//   catch (error){
+//     console.error('Error getting user details', error);
+//     res.status(500).send('Error while getting user details');
+//   }
+// });
+
+// app.get("/profile/edit", isAuthenticated, (req,res) => {
+//   try {
+//     const user_name = req.session.username;
+//   }
+//   catch (error){
+//   }
+  
+// });
+
+// app.post("/profile/edit", isAuthenticated, (req,res) => {
+//   try {
+//     const user_name = req.session.username;
+//   }
+//   catch (error){
+//   }
+  
+// });
+
+app.get("/profile", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+
+    const user_query = `SELECT * FROM Users WHERE username = $1;`;
+    const user_res = await pool.query(user_query, [user_name]);
+
+    if (user_res.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const user = user_res.rows[0];
+
+    const record_query = `SELECT * FROM UserHealthData WHERE username = $1;`;
+    const record_res = await pool.query(record_query, [user_name]);
+
+    const records = record_res.rows.length > 0 ? record_res.rows[0] : null;
+
+    res.render("profile", { user, records }); // records may be null
+  } catch (error) {
+    console.error('Error getting user details', error);
+    res.status(500).send('Error while getting user details');
+  }
+});
+
+
+app.get("/profile/edit", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+
+    const user_res = await pool.query("SELECT * FROM Users WHERE username = $1;", [user_name]);
+    const user = user_res.rows[0];
+
+    const record_res = await pool.query("SELECT * FROM UserHealthData WHERE username = $1;", [user_name]);
+    const records = record_res.rows.length > 0 ? record_res.rows[0] : null;
+
+    res.render("editProfile", { user, records });
+  } catch (error) {
+    console.error('Error rendering edit profile', error);
+    res.status(500).send("Error in edit profile");
+  }
+});
+
+
+app.post("/profile/edit", isAuthenticated, async (req, res) => {
+  try {
+    // const user_name = req.session.username;
+    // const { name, dob, height, weight } = req.body;
+
+    // // Update user basic data
+    // await pool.query("UPDATE Users SET name = $1, dob = $2 WHERE username = $3", [name, dob, user_name]);
+
+    // // Check if a health record exists
+    // const record_res = await pool.query("SELECT * FROM UserHealthData WHERE username = $1", [user_name]);
+
+    // if (record_res.rows.length > 0) {
+    //   // Update existing health record
+    //   await pool.query(
+    //     "UPDATE UserHealthData SET height = $1, weight = $2 WHERE username = $3",
+    //     [height, weight, user_name]
+    //   );
+    // } else {
+    //   // Insert new health record
+    //   await pool.query(
+    //     "INSERT INTO UserHealthData (username, height, weight) VALUES ($1, $2, $3)",
+    //     [user_name, height, weight]
+    //   );
+    // }
+
+    res.redirect("/profile");
+  } catch (error) {
+    console.error('Error updating profile', error);
+    res.status(500).send("Error while updating record");
+  }
+});
+
 
 
 // profile edit 
-// modifying user health data
+// modifying user health data\
+// add/ edit vaccines page
+
