@@ -7,7 +7,7 @@ import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 import CoverLayout from "layouts/authentication/components/CoverLayout";
-import bgImage from "assets/images/bg-sign-up-cover.jpeg";
+import bgImage from "assets/images/bgsignup.jpg";
 import { apiUrl } from "../../../config/config.js";
 
 const Cover = () => {
@@ -146,9 +146,15 @@ const Cover = () => {
               <MDTypography variant="button" fontWeight="regular" color="text">
                 &nbsp;I agree to the&nbsp;
               </MDTypography>
-              <MDTypography component="a" href="#" variant="button" fontWeight="bold" color="info">
-                Terms and Conditions
-              </MDTypography>
+              <MDTypography
+              component={Link}
+              to="/terms-and-conditions"
+              variant="button"
+              fontWeight="bold"
+              color="info"
+            >
+              Terms and Conditions
+            </MDTypography>
             </MDBox>
             {error && <MDTypography color="error">{error}</MDTypography>}
             {success && <MDTypography color="success">{success}</MDTypography>}
