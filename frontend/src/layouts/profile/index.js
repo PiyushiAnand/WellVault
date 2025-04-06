@@ -9,6 +9,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
+import MDButton from "components/MDButton";
+
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -26,12 +28,18 @@ function ProfilePage() {
   const [editFormData, setEditFormData] = useState({
     name: "",
     dob: "",
+    mobile_number: "",
+    gender: "",
+    address: "",
+    emergency_contact: "",
     height: "",
     weight: "",
     blood_group: "",
     allergy: "",
     ongoing_treatment: "",
   });
+
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const getRecords = async () => {
@@ -49,10 +57,14 @@ function ProfilePage() {
           setEditFormData({
             name: res.user?.name || "",
             dob: res.user?.dob ? res.user.dob.slice(0, 10) : "",
+            mobile_number: res.user?.mobile_number || "",
+            gender: res.user?.gender || "",
+            address: res.user?.address || "",
+            emergency_contact: res.user?.emergency_contact || "",
             height: res.record?.height || "",
             weight: res.record?.weight || "",
             blood_group: res.record?.blood_group || "",
-            allergys: res.record?.allergys || "",
+            allergy: res.record?.allergy || "",
             ongoing_treatment: res.record?.ongoing_treatment || "",
           });
         } else {
@@ -66,12 +78,37 @@ function ProfilePage() {
     getRecords();
   }, []);
 
+  const validate = () => {
+    const errs = {};
+    const isTenDigit = (val) => /^\d{10}$/.test(val);
+
+    if (!isTenDigit(editFormData.mobile_number)) {
+      errs.mobile_number = "Mobile number must be 10 digits.";
+    }
+    if (!isTenDigit(editFormData.emergency_contact)) {
+      errs.emergency_contact = "Emergency contact must be 10 digits.";
+    }
+
+    if (editFormData.dob) {
+      const enteredDate = new Date(editFormData.dob);
+      const today = new Date();
+      if (enteredDate > today) {
+        errs.dob = "Date of birth cannot be in the future.";
+      }
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
+    if (!validate()) return;
+
     try {
       const response = await fetch(`${apiUrl}/profile/edit`, {
         method: "POST",
@@ -84,7 +121,6 @@ function ProfilePage() {
         alert("Profile updated successfully!");
         setIsEditOpen(false);
 
-        // Refetch to update UI
         const updated = await fetch(`${apiUrl}/profile`, {
           method: "GET",
           credentials: "include",
@@ -117,30 +153,17 @@ function ProfilePage() {
               </MDBox>
 
               <MDBox>
-                <MDTypography variant="body2">
-                  <strong>Full Name:</strong> {user?.name || "Loading..."}
-                </MDTypography>
-                <MDTypography variant="body2">
-                  <strong>Mobile:</strong> {user?.mobile_number || "N/A"}
-                </MDTypography>
-                <MDTypography variant="body2">
-                  <strong>Date of Birth:</strong> {user?.dob ? user.dob.slice(0, 10) : "N/A"}
-                </MDTypography>
-                <MDTypography variant="body2">
-                  <strong>Height:</strong> {healthRecord?.height || "N/A"} cm
-                </MDTypography>
-                <MDTypography variant="body2">
-                  <strong>Weight:</strong> {healthRecord?.weight || "N/A"} kg
-                </MDTypography>
-                <MDTypography variant="body2">
-                  <strong>Blood Group:</strong> {healthRecord?.blood_group || "N/A"}
-                </MDTypography>
-                <MDTypography variant="body2">
-                  <strong>Allergies:</strong> {healthRecord?.allergys || "None"}
-                </MDTypography>
-                <MDTypography variant="body2">
-                  <strong>Ongoing Treatment:</strong> {healthRecord?.ongoing_treatment || "No"}
-                </MDTypography>
+                <MDTypography variant="body2"><strong>Full Name:</strong> {user?.name || "N/A"}</MDTypography>
+                <MDTypography variant="body2"><strong>Mobile:</strong> {user?.mobile_number || "N/A"}</MDTypography>
+                <MDTypography variant="body2"><strong>Date of Birth:</strong> {user?.dob?.slice(0, 10) || "N/A"}</MDTypography>
+                <MDTypography variant="body2"><strong>Gender:</strong> {user?.gender || "N/A"}</MDTypography>
+                <MDTypography variant="body2"><strong>Address:</strong> {user?.address || "N/A"}</MDTypography>
+                <MDTypography variant="body2"><strong>Emergency Contact:</strong> {user?.emergency_contact || "N/A"}</MDTypography>
+                <MDTypography variant="body2"><strong>Height:</strong> {healthRecord?.height || "N/A"} cm</MDTypography>
+                <MDTypography variant="body2"><strong>Weight:</strong> {healthRecord?.weight || "N/A"} kg</MDTypography>
+                <MDTypography variant="body2"><strong>Blood Group:</strong> {healthRecord?.blood_group || "N/A"}</MDTypography>
+                <MDTypography variant="body2"><strong>Allergies:</strong> {healthRecord?.allergy || "None"}</MDTypography>
+                <MDTypography variant="body2"><strong>Ongoing Treatment:</strong> {healthRecord?.ongoing_treatment || "No"}</MDTypography>
               </MDBox>
             </Card>
 
@@ -162,13 +185,7 @@ function ProfilePage() {
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
           <MDBox component="form" display="flex" flexDirection="column" gap={2} mt={1}>
-            <TextField
-              label="Full Name"
-              name="name"
-              value={editFormData.name}
-              onChange={handleFormChange}
-              fullWidth
-            />
+            <TextField label="Full Name" name="name" value={editFormData.name} onChange={handleFormChange} fullWidth />
             <TextField
               label="Date of Birth"
               type="date"
@@ -177,21 +194,43 @@ function ProfilePage() {
               onChange={handleFormChange}
               fullWidth
               InputLabelProps={{ shrink: true }}
+              error={!!errors.dob}
+              helperText={errors.dob}
             />
             <TextField
-              label="Height (cm)"
-              name="height"
-              value={editFormData.height}
+              label="Mobile Number"
+              name="mobile_number"
+              value={editFormData.mobile_number}
               onChange={handleFormChange}
+              error={!!errors.mobile_number}
+              helperText={errors.mobile_number}
               fullWidth
             />
             <TextField
-              label="Weight (kg)"
-              name="weight"
-              value={editFormData.weight}
+              label="Gender"
+              name="gender"
+              value={editFormData.gender}
               onChange={handleFormChange}
               fullWidth
+              select
+              SelectProps={{ native: true }}
+            >
+              <option value="">Select</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </TextField>
+            <TextField label="Address" name="address" value={editFormData.address} onChange={handleFormChange} fullWidth multiline rows={3} />
+            <TextField
+              label="Emergency Contact"
+              name="emergency_contact"
+              value={editFormData.emergency_contact}
+              onChange={handleFormChange}
+              error={!!errors.emergency_contact}
+              helperText={errors.emergency_contact}
+              fullWidth
             />
+            <TextField label="Height (cm)" name="height" value={editFormData.height} onChange={handleFormChange} fullWidth />
+            <TextField label="Weight (kg)" name="weight" value={editFormData.weight} onChange={handleFormChange} fullWidth />
             <TextField
               label="Blood Group"
               name="blood_group"
@@ -211,13 +250,7 @@ function ProfilePage() {
               <option value="O+">O+</option>
               <option value="O-">O-</option>
             </TextField>
-            <TextField
-              label="Allergies"
-              name="allergys"
-              value={editFormData.allergy}
-              onChange={handleFormChange}
-              fullWidth
-            />
+            <TextField label="Allergies" name="allergy" value={editFormData.allergy} onChange={handleFormChange} fullWidth />
             <TextField
               label="Ongoing Treatment"
               name="ongoing_treatment"
@@ -233,7 +266,6 @@ function ProfilePage() {
             </TextField>
           </MDBox>
         </DialogContent>
-
         <DialogActions>
           <Button onClick={() => setIsEditOpen(false)}>Cancel</Button>
           <Button variant="contained" color="primary" onClick={handleSave}>
@@ -246,3 +278,4 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
+

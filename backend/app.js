@@ -185,38 +185,19 @@ app.get("/profile", isAuthenticated, async (req, res) => {
 });
 
 
-// app.get("/profile/edit", isAuthenticated, async (req, res) => {
-//   try {
-//     const user_name = req.session.username;
-
-//     const user_res = await pool.query("SELECT * FROM Users WHERE username = $1;", [user_name]);
-//     const user = user_res.rows[0];
-
-//     const record_res = await pool.query("SELECT * FROM UserHealthData WHERE username = $1;", [user_name]);
-//     const records = record_res.rows.length > 0 ? record_res.rows[0] : null;
-
-//     res.render("editProfile", { user, records });
-
-//   } catch (error) {
-//     console.error('Error rendering edit profile', error);
-//     res.status(500).send("Error in edit profile");
-//   }
-// });
-
-
 app.post("/profile/edit", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
-    const { name, dob, height, weight,blood_group,allergy,ongoing_treatment } = req.body;
+    const { name, dob, mobile_number, gender, address, emergency_contact, height, weight,blood_group,allergy,ongoing_treatment } = req.body;
 
-    await pool.query("UPDATE Users SET name = $1, dob = $2 WHERE username = $3", [name, dob, user_name]);
+    await pool.query("UPDATE Users SET name = $1, dob = $2, mobile_number = $3, gender = $4, address = $5, emergency_contact = $6 WHERE username = $7", [name, dob, mobile_number, gender,address,emergency_contact,user_name]);
 
     const record_res = await pool.query("SELECT * FROM UserHealthData WHERE username = $1", [user_name]);
 
     if (record_res.rows.length > 0) {
       await pool.query(
-        "UPDATE UserHealthData SET height = $1, weight = $2 WHERE username = $3",
-        [height, weight, user_name]
+        "UPDATE UserHealthData SET height = $1, weight = $2, blood_group = $3, allergy = $4, ongoing_treatment = $5 WHERE username = $6",
+        [height, weight, blood_group, allergy, ongoing_treatment ,user_name]
       );
     } else {
       // Insert new health record
