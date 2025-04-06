@@ -11,7 +11,7 @@ function Reports() {
         <h1>Reports</h1>
         {/* Add your content here */}
       </MDBox>
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }

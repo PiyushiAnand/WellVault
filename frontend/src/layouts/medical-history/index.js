@@ -11,7 +11,7 @@ function History() {
         <h1>History</h1>
         {/* Add your content here */}
       </MDBox>
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }

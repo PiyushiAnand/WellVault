@@ -11,7 +11,7 @@ function Insurance() {
         <h1>Insurance</h1>
         {/* Add your content here */}
       </MDBox>
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }

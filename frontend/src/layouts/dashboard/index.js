@@ -69,7 +69,7 @@ function Dashboard() {
           ))}
         </Grid>
       </MDBox>
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }

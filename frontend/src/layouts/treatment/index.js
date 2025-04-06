@@ -11,7 +11,7 @@ function Treatments() {
         <h1>Treatments</h1>
         {/* Add your content here */}
       </MDBox>
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }

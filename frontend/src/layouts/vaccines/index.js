@@ -11,7 +11,7 @@ function Vaccines() {
         <h1>Vaccines</h1>
         {/* Add your content here */}
       </MDBox>
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }
