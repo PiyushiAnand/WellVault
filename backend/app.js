@@ -56,7 +56,7 @@ const isValidDate = (dateString) => {
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
-  if (req.session.userId) {
+  if (req.session.username) {
     return next();
   } else {
     return res.status(401).json({ message: "Unauthorized" });
@@ -133,7 +133,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/isLoggedIn", async (req, res) => {
-  if (req.session.userId) {
+  if (req.session.username) {
     res
       .status(200)
       .json({ message: "Logged in", username: req.session.username });
