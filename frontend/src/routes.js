@@ -45,6 +45,14 @@ import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 
+// Add these imports at the top
+import Prescriptions from "layouts/prescriptions";
+import Treatment from "layouts/treatment";
+import LabReports from "layouts/lab-reports";
+import Vaccines from "layouts/vaccines";
+import MedicalHistory from "layouts/medical-history";
+import Insurance from "layouts/insurance";
+
 // @mui icons
 import Icon from "@mui/material/Icon";
 
@@ -56,6 +64,54 @@ const routes = [
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
     component: <Dashboard />,
+  },
+  {
+    type: "collapse",
+    name: "Prescriptions",
+    key: "prescriptions",
+    icon: <Icon fontSize="small">medication</Icon>,
+    route: "/prescriptions",
+    component: <Prescriptions />,
+  },
+  {
+    type: "collapse",
+    name: "Ongoing Treatment",
+    key: "treatment",
+    icon: <Icon fontSize="small">healing</Icon>,
+    route: "/treatment",
+    component: <Treatment />,
+  },
+  {
+    type: "collapse",
+    name: "Lab Reports",
+    key: "lab-reports",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/lab-reports",
+    component: <LabReports />,
+  },
+  {
+    type: "collapse",
+    name: "Vaccines",
+    key: "vaccines",
+    icon: <Icon fontSize="small">vaccines</Icon>,
+    route: "/vaccines",
+    component: <Vaccines />,
+  },
+  {
+    type: "collapse",
+    name: "Medical History",
+    key: "medical-history",
+    icon: <Icon fontSize="small">history</Icon>,
+    route: "/medical-history",
+    component: <MedicalHistory />,
+  },
+  {
+    type: "collapse",
+    name: "Insurance",
+    key: "insurance",
+    icon: <Icon fontSize="small">security</Icon>,
+    route: "/insurance",
+    component: <Insurance />,
   },
   {
     type: "collapse",
