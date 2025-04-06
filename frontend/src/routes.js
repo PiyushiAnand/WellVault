@@ -53,11 +53,22 @@ import Vaccines from "layouts/vaccines";
 import MedicalHistory from "layouts/medical-history";
 import Insurance from "layouts/insurance";
 import Logout from "layouts/authentication/logout";
+import Homepage from "layouts/homepage";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
+import { layouts } from "chart.js";
 
 const routes = [
+
+  {
+    type: "homepage",
+    name: "Homepage",
+    key: "homepage",
+    route: "/",
+    component: <Homepage />,
+    layout:"homepage"
+  },
   {
     type: "collapse",
     name: "Dashboard",
@@ -65,6 +76,8 @@ const routes = [
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
     component: <Dashboard />,
+    layout:"dashboard"
+    
   },
   {
     type: "collapse",
@@ -73,6 +86,7 @@ const routes = [
     icon: <Icon fontSize="small">medication</Icon>,
     route: "/prescriptions",
     component: <Prescriptions />,
+    layout:"dashboard"
   },
   {
     type: "collapse",
@@ -81,6 +95,7 @@ const routes = [
     icon: <Icon fontSize="small">healing</Icon>,
     route: "/treatment",
     component: <Treatment />,
+    layout:"dashboard"
   },
   {
     type: "collapse",
@@ -89,6 +104,7 @@ const routes = [
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/lab-reports",
     component: <LabReports />,
+    layout:"dashboard"
   },
   {
     type: "collapse",
@@ -97,6 +113,7 @@ const routes = [
     icon: <Icon fontSize="small">vaccines</Icon>,
     route: "/vaccines",
     component: <Vaccines />,
+    layout:"dashboard"
   },
   {
     type: "collapse",
@@ -105,6 +122,7 @@ const routes = [
     icon: <Icon fontSize="small">history</Icon>,
     route: "/medical-history",
     component: <MedicalHistory />,
+    
   },
   {
     type: "collapse",
@@ -139,7 +157,7 @@ const routes = [
     component: <Profile />,
   },
   {
-    type: "collapse",
+    type: "auth",
     name: "Sign In",
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
@@ -147,7 +165,7 @@ const routes = [
     component: <SignIn />,
   },
   {
-    type: "collapse",
+    type: "auth",
     name: "Sign Up",
     key: "sign-up",
     icon: <Icon fontSize="small">assignment</Icon>,
@@ -167,6 +185,8 @@ const routes = [
     component: <Logout />,
     color: "error", // This uses the theme's error color (red)
   },
+
+  
 ];
 
 export default routes;

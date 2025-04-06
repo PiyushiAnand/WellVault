@@ -1,17 +1,34 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { signOut } from 'services/auth'; // Replace with your logout service
+import { apiUrl } from '../../../config/config.js'; // adjust path as needed
 
 function Logout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Perform logout operations
-    // signOut();
-    navigate('/authentication/sign-in');
+    const performLogout = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/logout`, {
+          method: "POST", // ensure you're using POST if your backend expects that
+          credentials: "include", // important for sending cookies
+        });
+
+        if (res.ok) {
+          navigate('/'); // redirect to home or login page
+        } else {
+          console.error("Logout failed");
+          navigate('/authentication/sign-in');
+        }
+      } catch (err) {
+        console.error("Logout error:", err);
+        navigate('/authentication/sign-in');
+      }
+    };
+
+    performLogout();
   }, [navigate]);
 
-  return null; // This component doesn't render anything
+  return null; // no UI
 }
 
 export default Logout;
