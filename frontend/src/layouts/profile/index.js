@@ -33,6 +33,9 @@ import img5 from "../../assets/avatars/woman.png";
 import img6 from "../../assets/avatars/woman-2.png";
 import img7 from "../../assets/avatars/woman-3.png";
 import img8 from "../../assets/avatars/account.png";
+import img9 from "../../assets/avatars/user.png";
+import img10 from "../../assets/avatars/penguin.png";
+import img11 from "../../assets/avatars/rabbit.png";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -329,7 +332,7 @@ function ProfilePage() {
         <DialogContent>
           <MDBox mt={1} mb={2}>
             <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
-              {[img5, img6, img7, img1, img3, img2, img4].map((src, index) => (
+              {[img5, img6, img7, img1, img3, img9, img10, img11, img2, img4].map((src, index) => (
                 <Avatar
                   key={index}
                   src={src}
