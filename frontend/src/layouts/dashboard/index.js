@@ -10,6 +10,8 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
+import { useEffect } from "react";
+import { apiUrl } from "../../config/config.js";
 
 // Navigation
 import { useNavigate } from "react-router-dom";
@@ -40,7 +42,25 @@ const getColor = (index) => {
 
 function Dashboard() {
   const navigate = useNavigate();
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/isLoggedIn`, {
+                 method: "GET",
+                 credentials: "include",
+               });
+        
+        if (res.status === 401) {
+          navigate("/homepage");
+        }
+      } catch (err) {
+        console.error("Error verifying auth", err);
+        navigate("/homepage");
+      }
+    };
 
+    checkAuth();
+  }, [navigate]);
   const medicalCards = [
     { title: "Prescriptions", icon: "medication", count: 12, path: "/prescriptions" },
     { title: "Ongoing Treatment", icon: "healing", count: 3, path: "/treatment" },
