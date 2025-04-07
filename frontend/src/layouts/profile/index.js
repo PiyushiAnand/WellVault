@@ -1,6 +1,19 @@
+/*
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+=========================================================
+*/
+
 import React, { useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
+import Divider from "@mui/material/Divider";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -9,16 +22,28 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
-import MDButton from "components/MDButton";
-
-
+import Avatar from "@mui/material/Avatar";
+import Stack from "@mui/material/Stack";
+import Input from "@mui/material/Input";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
+import img1 from "../../assets/avatars/boy.png";
+import img2 from "../../assets/avatars/cat.png"
+import img3 from "../../assets/avatars/man.png";
+import img4 from "../../assets/avatars/panda.png";
+import img5 from "../../assets/avatars/woman.png";
+import img6 from "../../assets/avatars/woman-2.png";
+import img7 from "../../assets/avatars/woman-3.png";
+import img8 from "../../assets/avatars/account.png";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import MDButton from "components/MDButton";
 
-// Dashboard Layout
+// Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import Footer from "examples/Footer";
+
 import { apiUrl } from "../../config/config.js";
 
 function ProfilePage() {
@@ -38,9 +63,20 @@ function ProfilePage() {
     allergy: "",
     ongoing_treatment: "",
   });
-
   const [errors, setErrors] = useState({});
+  // Inside your ProfilePage component, add:
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [isAvatarEditOpen, setIsAvatarEditOpen] = useState(false);
 
+  // Add handler for image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setAvatarUrl(imageUrl);
+      // You can also upload it to the server here if needed.
+    }
+  };
   useEffect(() => {
     const getRecords = async () => {
       try {
@@ -120,7 +156,6 @@ function ProfilePage() {
       if (response.ok) {
         alert("Profile updated successfully!");
         setIsEditOpen(false);
-
         const updated = await fetch(`${apiUrl}/profile`, {
           method: "GET",
           credentials: "include",
@@ -134,148 +169,151 @@ function ProfilePage() {
       }
     } catch (err) {
       console.error("Update failed", err);
-      alert("Error while updating profile.");
     }
   };
 
   return (
+    
     <DashboardLayout>
       <DashboardNavbar />
-      <MDBox pt={6} pb={3}>
+        <MDBox display="flex" alignItems="center" mb={2}>
+          <Avatar
+            alt={user?.name || "Profile Picture"}
+            src={avatarUrl || img8 } // fallback image
+            sx={{ width: 100, height: 100, mr: 2 }}
+          />
+          <IconButton
+            color="primary"
+            aria-label="edit avatar"
+            onClick={() => setIsAvatarEditOpen(true)}
+          >
+            <EditIcon />
+          </IconButton>
+            
+
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <label htmlFor="upload-avatar">
+              <Input
+                accept="image/*"
+                id="upload-avatar"
+                type="file"
+                onChange={handleImageUpload}
+                sx={{ display: "none" }}
+              />
+              <IconButton color="primary" aria-label="upload picture" component="span">
+                <PhotoCamera />
+              </IconButton>
+            </label>
+          </Stack>
+        </MDBox>
+
+      <MDBox mt={5} mb={3}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6} xl={4}>
-            <Card sx={{ p: 3 }}>
-              <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <MDTypography variant="h6">Profile Info</MDTypography>
-                <IconButton onClick={() => setIsEditOpen(true)} title="Edit Profile">
-                  <EditIcon />
-                </IconButton>
-              </MDBox>
-
-              <MDBox>
-                <MDTypography variant="body2"><strong>Full Name:</strong> {user?.name || "N/A"}</MDTypography>
-                <MDTypography variant="body2"><strong>Mobile:</strong> {user?.mobile_number || "N/A"}</MDTypography>
-                <MDTypography variant="body2"><strong>Date of Birth:</strong> {user?.dob?.slice(0, 10) || "N/A"}</MDTypography>
-                <MDTypography variant="body2"><strong>Gender:</strong> {user?.gender || "N/A"}</MDTypography>
-                <MDTypography variant="body2"><strong>Address:</strong> {user?.address || "N/A"}</MDTypography>
-                <MDTypography variant="body2"><strong>Emergency Contact:</strong> {user?.emergency_contact || "N/A"}</MDTypography>
-                <MDTypography variant="body2"><strong>Height:</strong> {healthRecord?.height || "N/A"} cm</MDTypography>
-                <MDTypography variant="body2"><strong>Weight:</strong> {healthRecord?.weight || "N/A"} kg</MDTypography>
-                <MDTypography variant="body2"><strong>Blood Group:</strong> {healthRecord?.blood_group || "N/A"}</MDTypography>
-                <MDTypography variant="body2"><strong>Allergies:</strong> {healthRecord?.allergy || "None"}</MDTypography>
-                <MDTypography variant="body2"><strong>Ongoing Treatment:</strong> {healthRecord?.ongoing_treatment || "No"}</MDTypography>
-              </MDBox>
-            </Card>
-
-            {!healthRecord && (
+          <Grid item xs={12} md={6}>
+            <MDTypography variant="h6">Profile Information</MDTypography>
+            {user && (
               <MDBox mt={2}>
-                <Card sx={{ p: 2 }}>
-                  <MDTypography variant="body2" color="text">
-                    No health records found yet. You can add them using "Edit Profile".
-                  </MDTypography>
-                </Card>
+                <MDTypography>Name: {user.name}</MDTypography>
+                <MDTypography>DOB: {user.dob}</MDTypography>
+                <MDTypography>Mobile: {user.mobile_number}</MDTypography>
+                <MDTypography>Gender: {user.gender}</MDTypography>
+                <MDTypography>Address: {user.address}</MDTypography>
+                <MDTypography>Emergency Contact: {user.emergency_contact}</MDTypography>
               </MDBox>
             )}
           </Grid>
+          <Grid item xs={12} md={6}>
+            <MDTypography variant="h6">Health Record</MDTypography>
+            {healthRecord && (
+              <MDBox mt={2}>
+                <MDTypography>Height: {healthRecord.height}</MDTypography>
+                <MDTypography>Weight: {healthRecord.weight}</MDTypography>
+                <MDTypography>Blood Group: {healthRecord.blood_group}</MDTypography>
+                <MDTypography>Allergy: {healthRecord.allergy}</MDTypography>
+                <MDTypography>Ongoing Treatment: {healthRecord.ongoing_treatment}</MDTypography>
+              </MDBox>
+            )}
+            <MDBox mt={2}>
+              <MDButton onClick={() => setIsEditOpen(true)} startIcon={<EditIcon />} color="info">
+                Edit Profile
+              </MDButton>
+            </MDBox>
+          </Grid>
         </Grid>
       </MDBox>
+      <Footer />
 
-      {/* === Edit Form Modal === */}
       <Dialog open={isEditOpen} onClose={() => setIsEditOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
-          <MDBox component="form" display="flex" flexDirection="column" gap={2} mt={1}>
-            <TextField label="Full Name" name="name" value={editFormData.name} onChange={handleFormChange} fullWidth />
-            <TextField
-              label="Date of Birth"
-              type="date"
-              name="dob"
-              value={editFormData.dob}
-              onChange={handleFormChange}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              error={!!errors.dob}
-              helperText={errors.dob}
-            />
-            <TextField
-              label="Mobile Number"
-              name="mobile_number"
-              value={editFormData.mobile_number}
-              onChange={handleFormChange}
-              error={!!errors.mobile_number}
-              helperText={errors.mobile_number}
-              fullWidth
-            />
-            <TextField
-              label="Gender"
-              name="gender"
-              value={editFormData.gender}
-              onChange={handleFormChange}
-              fullWidth
-              select
-              SelectProps={{ native: true }}
-            >
-              <option value="">Select</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </TextField>
-            <TextField label="Address" name="address" value={editFormData.address} onChange={handleFormChange} fullWidth multiline rows={3} />
-            <TextField
-              label="Emergency Contact"
-              name="emergency_contact"
-              value={editFormData.emergency_contact}
-              onChange={handleFormChange}
-              error={!!errors.emergency_contact}
-              helperText={errors.emergency_contact}
-              fullWidth
-            />
-            <TextField label="Height (cm)" name="height" value={editFormData.height} onChange={handleFormChange} fullWidth />
-            <TextField label="Weight (kg)" name="weight" value={editFormData.weight} onChange={handleFormChange} fullWidth />
-            <TextField
-              label="Blood Group"
-              name="blood_group"
-              value={editFormData.blood_group}
-              onChange={handleFormChange}
-              fullWidth
-              select
-              SelectProps={{ native: true }}
-            >
-              <option value="">Select Blood Group</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </TextField>
-            <TextField label="Allergies" name="allergy" value={editFormData.allergy} onChange={handleFormChange} fullWidth />
-            <TextField
-              label="Ongoing Treatment"
-              name="ongoing_treatment"
-              value={editFormData.ongoing_treatment}
-              onChange={handleFormChange}
-              fullWidth
-              select
-              SelectProps={{ native: true }}
-            >
-              <option value="">Select</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </TextField>
-          </MDBox>
+          <Grid container spacing={2}>
+            {Object.entries(editFormData).map(([key, value]) => (
+              <Grid item xs={12} sm={6} key={key}>
+                <TextField
+                  fullWidth
+                  label={key.replace(/_/g, " ")}
+                  name={key}
+                  value={value}
+                  onChange={handleFormChange}
+                  error={!!errors[key]}
+                  helperText={errors[key] || ""}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsEditOpen(false)}>Cancel</Button>
-          <Button variant="contained" color="primary" onClick={handleSave}>
+          <Button onClick={handleSave} variant="contained" color="primary">
             Save
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog open={isAvatarEditOpen} onClose={() => setIsAvatarEditOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Choose Avatar</DialogTitle>
+        <DialogContent>
+          <MDBox mt={1} mb={2}>
+            <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
+              {[img5,img6,img7,img1,img3,img2,img4].map((src, index) => (
+                <Avatar
+                  key={index}
+                  src={src}
+                  onClick={() => {
+                    setAvatarUrl(src);
+                    setIsAvatarEditOpen(false);
+                  }}
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    cursor: "pointer",
+                    border: avatarUrl === src ? "2px solid #1976d2" : "2px solid transparent",
+                    transition: "border 0.2s",
+                    m: 1
+                  }}
+                />
+              ))}
+            </Stack>
+            <Stack direction="row" alignItems="center" justifyContent="center" mt={2}>
+              <label htmlFor="upload-avatar">
+                <Input
+                  accept="image/*"
+                  id="upload-avatar"
+                  type="file"
+                  onChange={(e) => {
+                    handleImageUpload(e);
+                    setIsAvatarEditOpen(false);
+                  }}
+                  sx={{ display: "none" }}
+                />
+                
+              </label>
+            </Stack>
+          </MDBox>
+        </DialogContent>
+      </Dialog>
+
     </DashboardLayout>
   );
 }
 
 export default ProfilePage;
-
