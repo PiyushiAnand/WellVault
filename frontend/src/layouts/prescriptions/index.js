@@ -11,7 +11,6 @@ function Prescriptions() {
         <h1>Prescriptions</h1>
         {/* Add your content here */}
       </MDBox>
-      <Footer />
     </DashboardLayout>
   );
 }
