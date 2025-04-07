@@ -8,7 +8,6 @@ import MDBox from "components/MDBox";
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import { useEffect } from "react";
 import { apiUrl } from "../../config/config.js";
@@ -51,11 +50,11 @@ function Dashboard() {
                });
         
         if (res.status === 401) {
-          navigate("/homepage");
+          navigate("/");
         }
       } catch (err) {
         console.error("Error verifying auth", err);
-        navigate("/homepage");
+        navigate("/");
       }
     };
 

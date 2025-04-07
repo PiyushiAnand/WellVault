@@ -31,6 +31,9 @@ import Icon from "@mui/material/Icon";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDInput from "components/MDInput";
+import MDTypography from "components/MDTypography";
+import { useNavigate } from "react-router-dom";
+
 
 // Material Dashboard 2 React example components
 import Breadcrumbs from "examples/Breadcrumbs";
@@ -59,7 +62,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname.split("/").slice(1);
-
+  const navigate = useNavigate();
   useEffect(() => {
     // Setting the navbar type
     if (fixedNavbar) {
@@ -130,9 +133,18 @@ function DashboardNavbar({ absolute, light, isMini }) {
       sx={(theme) => navbar(theme, { transparentNavbar, absolute, light, darkMode })}
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
-        <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
-          <Breadcrumbs icon="home" title={route[route.length - 1]} route={route} light={light} />
-        </MDBox>
+      <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
+      <MDTypography
+        variant="h6"
+        fontWeight="bold"
+        textTransform="capitalize"
+        color={light ? "white" : "dark"}
+      >
+        {route[route.length - 1].replace(/-/g, " ")}
+      </MDTypography>
+
+      </MDBox>
+
         {isMini ? null : (
           <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
             {/* <MDBox pr={1}>
@@ -172,7 +184,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 aria-controls="notification-menu"
                 aria-haspopup="true"
                 variant="contained"
-                onClick={handleOpenMenu}
+                onClick={() => navigate("/notifications")}
               >
                 <Icon sx={iconsStyle}>notifications</Icon>
               </IconButton>

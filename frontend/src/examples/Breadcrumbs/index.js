@@ -47,7 +47,7 @@ function Breadcrumbs({ icon, title, route, light }) {
             opacity={light ? 0.8 : 0.5}
             sx={{ lineHeight: 0 }}
           >
-            <Icon>{icon}</Icon>
+            {/* <Icon>{icon}</Icon> */}
           </MDTypography>
         </Link>
         {routes.map((el) => (
@@ -73,6 +73,7 @@ function Breadcrumbs({ icon, title, route, light }) {
           sx={{ lineHeight: 0 }}
         >
           {title.replace("-", " ")}
+          
         </MDTypography>
       </MuiBreadcrumbs>
       <MDTypography

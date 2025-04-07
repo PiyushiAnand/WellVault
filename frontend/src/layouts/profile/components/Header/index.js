@@ -112,7 +112,7 @@ function Header({ children }) {
                 <Tab
                   label="App"
                   icon={
-                    <Icon fontSize="small" sx={{ mt: -0.25 }}>
+                    <Icon fontSize="small" sx={{ mt: -0.25 }} linkto="/dashboard">
                       home
                     </Icon>
                   }
