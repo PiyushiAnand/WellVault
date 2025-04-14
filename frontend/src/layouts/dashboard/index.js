@@ -17,19 +17,21 @@ import { useNavigate } from "react-router-dom";
 
 // Styled component
 const MedicalCard = styled(ComplexStatisticsCard)(({ theme }) => ({
-  '& .MuiTypography-h4': {
-    fontSize: '2rem',
+  '& .MuiTypography-root': {
+    fontSize: '1.5rem',
     fontWeight: 600,
-  },
-  '& .MuiTypography-h6': {
-    fontSize: '1.25rem',
-    fontWeight: 700,
+    textAlign: 'center',
+    marginTop: '1rem'
   },
   minHeight: '200px',
   cursor: 'pointer',
   transition: 'transform 0.3s',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
   '&:hover': {
-    transform: 'translateY(-5px)'
+    transform: 'translateY(-5px)',
+    boxShadow: theme.shadows[6]
   }
 }));
 
@@ -45,9 +47,9 @@ function Dashboard() {
     const checkAuth = async () => {
       try {
         const res = await fetch(`${apiUrl}/isLoggedIn`, {
-                 method: "GET",
-                 credentials: "include",
-               });
+          method: "GET",
+          credentials: "include",
+        });
         
         if (res.status === 401) {
           navigate("/");
@@ -60,35 +62,38 @@ function Dashboard() {
 
     checkAuth();
   }, [navigate]);
+
   const medicalCards = [
-    { title: "Prescriptions", icon: "medication", count: 12, path: "/prescriptions" },
-    { title: "Ongoing Treatment", icon: "healing", count: 3, path: "/treatment" },
-    { title: "Lab Reports", icon: "assignment", count: 5, path: "/lab-reports" },
-    { title: "Vaccines", icon: "vaccines", count: 4, path: "/vaccines" },
-    { title: "Medical History", icon: "history", count: "Complete", path: "/medical-history" },
-    { title: "Insurance Details", icon: "security", count: "Active", path: "/insurance" }
+    { title: "Prescriptions", icon: "medication", path: "/prescriptions" },
+    { title: "Ongoing Treatment", icon: "healing", path: "/treatment" },
+    { title: "Lab Reports", icon: "assignment", path: "/lab-reports" },
+    { title: "Vaccines", icon: "vaccines", path: "/vaccines" },
+    { title: "Medical History", icon: "history", path: "/medical-history" },
+    { title: "Insurance Details", icon: "security", path: "/insurance" }
   ];
 
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox py={3}>
+        <Typography variant="h3" gutterBottom sx={{ mb: 4 }}>
+          Medical Dashboard
+        </Typography>
         <Grid container spacing={3}>
           {medicalCards.map((card, index) => (
             <Grid item xs={12} md={6} lg={4} key={index}>
               <MDBox mb={3} onClick={() => navigate(card.path)}>
+                
                 <MedicalCard
                   color={getColor(index)}
                   icon={card.icon}
-                  title={<Typography variant="h6">{card.title}</Typography>}
-                  count={card.count}
+                  title={<Typography variant="h4">{card.title}</Typography>}
                 />
               </MDBox>
             </Grid>
           ))}
         </Grid>
       </MDBox>
-      {/* <Footer /> */}
     </DashboardLayout>
   );
 }
