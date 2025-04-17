@@ -134,14 +134,14 @@ function DashboardNavbar({ absolute, light, isMini }) {
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
       <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
-      <MDTypography
+      {/* <MDTypography
         variant="h6"
         fontWeight="bold"
         textTransform="capitalize"
         color={light ? "white" : "dark"}
       >
         {route[route.length - 1].replace(/-/g, " ")}
-      </MDTypography>
+      </MDTypography> */}
 
       </MDBox>
 

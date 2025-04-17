@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../../config/config.js";
 import {
   Card,
   Grid,
@@ -10,7 +11,11 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -18,52 +23,52 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
-
-// Layout components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 
+// Enum-like array of vaccine names
+const VACCINE_NAMES = [
+  "COVIDSHIELD",
+  "COVAXIN",
+  "MMR",
+  "HEPATITIS-B",
+  "POLIO",
+  "BCG",
+  "TETANUS",
+  "INFLUENZA",
+];
+
 function Vaccines() {
   const navigate = useNavigate();
+  const [oldvacname,setOldvacname] = useState("");
   const [vaccines, setVaccines] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [newVaccine, setNewVaccine] = useState({
-    vaccineName: "",
-    dateAdministered: new Date().toISOString().split('T')[0],
-    nextDoseDate: "",
-    administeredBy: "",
-    location: "",
-    notes: ""
+    vaccine_name: "",
+    no_of_dose: "",
+    year_administered: "",
+    administering_hospital: "",
   });
 
   useEffect(() => {
     const fetchVaccines = async () => {
       try {
-        const mockData = [
-          {
-            id: 1,
-            vaccineName: "COVID-19 Booster",
-            dateAdministered: "2023-03-15",
-            nextDoseDate: "2023-09-15",
-            administeredBy: "Dr. Patel",
-            location: "City Health Center",
-            notes: "No side effects"
-          },
-          {
-            id: 2,
-            vaccineName: "Flu Shot",
-            dateAdministered: "2022-10-10",
-            nextDoseDate: "2023-10-10",
-            administeredBy: "Nurse Johnson",
-            location: "Local Pharmacy",
-            notes: "Mild soreness"
-          }
-        ];
-        setVaccines(mockData);
+        const res = await fetch(`${apiUrl}/vaccines`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (res.status === 401) {
+          navigate("/");
+        }
+        if (!res.ok) {
+          throw new Error("Failed to fetch vaccines");
+        }
+        const data = await res.json();
+        setVaccines(data.vaccines);
       } catch (error) {
         console.error("Error fetching vaccines:", error);
       }
@@ -74,42 +79,94 @@ function Vaccines() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewVaccine(prev => ({ ...prev, [name]: value }));
+    // if (name === "vaccine_name"){
+    //   setOldvacname(value);
+    // }
+    setNewVaccine((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAddVaccine = () => {
+   
     setNewVaccine({
-      vaccineName: "",
-      dateAdministered: new Date().toISOString().split('T')[0],
-      nextDoseDate: "",
-      administeredBy: "",
-      location: "",
-      notes: ""
+      vaccine_name: "",
+      no_of_dose: "",
+      year_administered: "",
+      administering_hospital: "",
     });
     setEditingIndex(null);
     setOpenDialog(true);
   };
 
   const handleEditVaccine = (index) => {
-    setNewVaccine(vaccines[index]);
+
+    const selectedVaccine = vaccines[index];
+    setNewVaccine({ ...selectedVaccine });
     setEditingIndex(index);
+    setOldvacname(selectedVaccine.vaccine_name);
     setOpenDialog(true);
   };
 
-  const handleSaveVaccine = () => {
-    if (editingIndex !== null) {
-      const updated = [...vaccines];
-      updated[editingIndex] = newVaccine;
-      setVaccines(updated);
-    } else {
-      setVaccines([...vaccines, { ...newVaccine, id: Date.now() }]);
+  const handleSaveVaccine = async () => {
+    try {
+      if (editingIndex !== null) {
+        const response = await fetch(`${apiUrl}/update-vaccine`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({oname:oldvacname,newVaccine}),
+          credentials: "include",
+        });
+        if(response.status === 500) alert("Vaccine name already exists");
+        if(response.status === 400) alert ("invalid year");
+        if (!response.ok) throw new Error("Failed to update vaccine");
+
+        const updated = [...vaccines];
+        updated[editingIndex] = newVaccine;
+        setVaccines(updated);
+      } else {
+        const response = await fetch(`${apiUrl}/add-vaccine`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newVaccine),
+          credentials: "include",
+        });
+        if(response.status === 500) alert("Vaccine name already exists");
+        if(response.status === 400) alert ("invalid year");
+        if (!response.ok) throw new Error("Failed to add vaccine");
+
+        const result = await response.json();
+        setVaccines([...vaccines, result.vaccine]);
+        console.log(result);
+      }
+
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error saving vaccine:", error);
     }
-    setOpenDialog(false);
   };
 
-  const handleDeleteVaccine = (index) => {
-    const updated = vaccines.filter((_, i) => i !== index);
-    setVaccines(updated);
+  const handleDeleteVaccine = async (index) => {
+    try {
+      const vaccineToDelete = vaccines[index];
+      const response = await fetch(`${apiUrl}/delete-vaccine`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({vaccine: vaccineToDelete }),
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete vaccine");
+
+      const updated = vaccines.filter((_, i) => i !== index);
+      setVaccines(updated);
+    } catch (error) {
+      console.error("Error deleting vaccine:", error);
+    }
   };
 
   return (
@@ -125,11 +182,11 @@ function Vaccines() {
 
         <Grid container spacing={3}>
           {vaccines.map((vaccine, index) => (
-            <Grid item xs={12} sm={6} md={4} key={vaccine.id}>
+            <Grid item xs={12} sm={6} md={4} key={vaccine.id || index}>
               <Card sx={{ p: 2, height: "100%", position: "relative" }}>
                 <MDBox display="flex" justifyContent="space-between">
                   <Typography variant="h4" gutterBottom>
-                    {vaccine.vaccineName}
+                    {vaccine.vaccine_name}
                   </Typography>
                   <MDBox>
                     <IconButton onClick={() => handleEditVaccine(index)}>
@@ -140,138 +197,84 @@ function Vaccines() {
                     </IconButton>
                   </MDBox>
                 </MDBox>
-                
+
                 <MDBox mt={2}>
                   <Typography variant="body1">
-                    <strong>Date Administered:</strong> {vaccine.dateAdministered}
+                    <strong>Dose no:</strong> {vaccine.no_of_dose}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Next Dose Date:</strong> {vaccine.nextDoseDate}
+                    <strong>Year administered:</strong> {vaccine.year_administered}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Administered By:</strong> {vaccine.administeredBy}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Location:</strong> {vaccine.location}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Notes:</strong> {vaccine.notes}
+                    <strong>Administering Hospital:</strong> {vaccine.administering_hospital}
                   </Typography>
                 </MDBox>
               </Card>
             </Grid>
           ))}
-
-          <Grid item xs={12} sm={6} md={4}>
-            <Card 
-              onClick={handleAddVaccine}
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: "200px",
-                cursor: "pointer",
-                transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "scale(1.02)",
-                  boxShadow: 6
-                },
-                border: "2px dashed",
-                borderColor: "text.secondary"
-              }}
-            >
-              <AddIcon sx={{ fontSize: 48, color: "text.secondary" }} />
-              <Typography variant="h6" color="text.secondary">
-                Add New Vaccine
-              </Typography>
-            </Card>
-          </Grid>
         </Grid>
 
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            {editingIndex !== null ? "Edit Vaccine" : "Add New Vaccine"}
-          </DialogTitle>
+          <DialogTitle>{editingIndex !== null ? "Edit Vaccine" : "Add New Vaccine"}</DialogTitle>
           <DialogContent>
-            <MDBox component="form" sx={{ mt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <FormControl fullWidth required>
+                  <InputLabel id="vaccine-name-label">Vaccine Name</InputLabel>
+                  <Select
+                    labelId="vaccine-name-label"
+                    name="vaccine_name"
+                    value={newVaccine.vaccine_name}
+                    onChange={handleInputChange}
                     label="Vaccine Name"
-                    name="vaccineName"
-                    value={newVaccine.vaccineName}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Date Administered"
-                    name="dateAdministered"
-                    type="date"
-                    value={newVaccine.dateAdministered}
-                    onChange={handleInputChange}
-                    InputLabelProps={{ shrink: true }}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Next Dose Date"
-                    name="nextDoseDate"
-                    type="date"
-                    value={newVaccine.nextDoseDate}
-                    onChange={handleInputChange}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Administered By"
-                    name="administeredBy"
-                    value={newVaccine.administeredBy}
-                    onChange={handleInputChange}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Location"
-                    name="location"
-                    value={newVaccine.location}
-                    onChange={handleInputChange}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Notes"
-                    name="notes"
-                    value={newVaccine.notes}
-                    onChange={handleInputChange}
-                    multiline
-                    rows={3}
-                  />
-                </Grid>
+                  >
+                    {VACCINE_NAMES.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        {name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
-            </MDBox>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="No of dose"
+                  name="no_of_dose"
+                  type="number"
+                  value={newVaccine.no_of_dose}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Year Administered"
+                  name="year_administered"
+                  value={newVaccine.year_administered}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Administering Hospital"
+                  name="administering_hospital"
+                  value={newVaccine.administering_hospital}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+            </Grid>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenDialog(false)} startIcon={<CancelIcon />}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSaveVaccine} 
-              startIcon={<SaveIcon />}
-              variant="contained"
-              color="primary"
-            >
+            <Button onClick={handleSaveVaccine} startIcon={<SaveIcon />} variant="contained" color="primary">
               Save
             </Button>
           </DialogActions>

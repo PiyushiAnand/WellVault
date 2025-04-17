@@ -10,10 +10,10 @@ const port = 4000;
 // PostgreSQL connection
 // NOTE: use YOUR postgres username and password here
 const pool = new Pool({
-  user: "whoknows",
+  user: "postgres",
   host: "localhost",
   database: "project",
-  password: "whoknows",
+  password: "postgres",
   port: 5432,
 });
 
@@ -215,4 +215,146 @@ app.post("/profile/edit", isAuthenticated, async (req, res) => {
 });
 
 
+app.get("/medical-history", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
 
+    const query = `SELECT date,hospital_name,diagnosis FROM MedicalHistory WHERE username = $1;`;
+    const result = await pool.query(query, [user_name]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No medical history found" });
+    }
+
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error getting medical history", error);
+    res.status(500).send("Error while getting medical history");
+  }
+});
+
+app.get("/vaccines", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+
+    const query = `SELECT vaccine_name, no_of_dose,year_administered,administering_hospital FROM Vaccines WHERE username = $1;`;
+    const result = await pool.query(query, [user_name]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No vaccines found" });
+    }
+    res.status(200).json({vaccines: result.rows});
+    
+  }
+  catch (error) {
+    console.error("Error getting vaccines", error);
+    res.status(500).send("Error while getting vaccines");
+  }
+});
+
+app.post("/add-vaccine", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { vaccine_name, no_of_dose, year_administered, administering_hospital } = req.body;
+    console.log(req.body);
+    
+    const currentYear = new Date().getFullYear();
+    const year = Number(year_administered);
+
+    if (isNaN(year) || year < 1900 || year > currentYear) {
+      return res.status(400).json({ message: "Invalid year entered." });
+    }
+    
+    const query = `INSERT INTO Vaccines (username, vaccine_name, no_of_dose, year_administered, administering_hospital) VALUES ($1, $2, $3, $4, $5) returning *;`;
+    const result = await pool.query(query, [user_name, vaccine_name, no_of_dose, year_administered, administering_hospital]);
+    console.log(result.rows)
+    res.status(201).json({vaccine:result.rows[0]});
+  } catch (error) {
+    console.error("Error adding vaccine", error);
+    res.status(500).send("Error while adding vaccine");
+  }
+}
+);
+
+app.post("/delete-vaccine", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { vaccine } = req.body;
+    const vaccine_name = vaccine.vaccine_name;
+    console.log(vaccine)
+    const query = `DELETE FROM Vaccines WHERE username = $1 AND vaccine_name = $2;`;
+
+    await pool.query(query, [user_name, vaccine_name]);
+    res.status(200).json({ message: "Vaccine deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting vaccine");
+    res.status(500).send("Error while deleting vaccine");
+  }
+}
+);
+
+app.put("/update-vaccine", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    
+    const { oname, newVaccine } = req.body;
+    // console.log(req.body.newVaccine.vaccine_name);
+    console.log(req.body);
+    console.log(user_name)
+    console.log(oname)
+    const currentYear = new Date().getFullYear();
+    const year = Number(newVaccine.year_administered);
+
+    if (isNaN(year) || year < 1900 || year > currentYear) {
+      return res.status(400).json({ message: "Invalid year entered." });
+    }
+
+    const res1 = await pool.query(`Select * from vaccines where username = $1 and vaccine_name = $2`,[user_name,oname]);
+    console.log(res1.rows);
+    const query = `UPDATE Vaccines SET vaccine_name = $1, no_of_dose = $2, year_administered = $3, administering_hospital = $4 WHERE username = $5 AND vaccine_name = $6;`;
+    
+    const result = await pool.query(query, [newVaccine.vaccine_name, newVaccine.no_of_dose, newVaccine.year_administered, newVaccine.administering_hospital, user_name,oname]);
+    console.log(result.rows)
+    res.status(200).json({ message: "Vaccine updated successfully" });
+  } catch (error) {
+    console.error("Error updating vaccine", error);
+    res.status(500).send("Error while updating vaccine");
+  }
+}
+);
+
+
+app.get("/ongoing-medication", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+
+    const query = `SELECT medication_name,dosage,start_data,end_date,prescribing_doc FROM OngoingMedication WHERE username = $1;`;
+    const result = await pool.query(query, [user_name]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No ongoing treatment found" });
+    }
+
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error getting ongoing treatment", error);
+    res.status(500).send("Error while getting ongoing treatment");
+  }
+}
+);
+
+
+app.get("/lab-reports", isAuthenticated, async (req, res) => {
+  try{
+    const user_name = req.session.username;
+    const query = `SELECT report_id ,data, report_file FROM LabReports WHERE username = $1;`;
+    const result = await pool.query(query, [user_name]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No lab reports found" });
+    }
+    res.status(200).json(result.rows);
+  }
+  catch (error) {
+    console.error("Error getting lab reports", error);
+    res.status(500).send("Error while getting lab reports");
+  }
+});
