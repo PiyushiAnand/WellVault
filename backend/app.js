@@ -327,17 +327,69 @@ app.get("/ongoing-medication", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
 
-    const query = `SELECT medication_name,dosage,start_data,end_date,prescribing_doc FROM OngoingMedication WHERE username = $1;`;
+    const query = `SELECT medication_name,dosage,start_date,end_date,prescribing_doc FROM OngoingMedication WHERE username = $1;`;
     const result = await pool.query(query, [user_name]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "No ongoing treatment found" });
     }
 
-    res.status(200).json(result.rows);
+    res.status(200).json({meds: result.rows});
   } catch (error) {
     console.error("Error getting ongoing treatment", error);
     res.status(500).send("Error while getting ongoing treatment");
+  }
+}
+);
+
+
+app.post("/add-medication", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { medication_name, dosage, start_date, end_date, prescribing_doc } = req.body;
+
+    const query = `INSERT INTO OngoingMedication (username, medication_name, dosage, start_date, end_date, prescribing_doc) VALUES ($1, $2, $3, $4, $5, $6) returning *;`;
+    const result = await pool.query(query, [user_name, medication_name, dosage, start_date, end_date, prescribing_doc]);
+    res.status(201).json({med:result.rows[0]});
+  } catch (error) {
+    console.error("Error adding ongoing treatment", error);
+    res.status(500).send("Error while adding ongoing treatment");
+  }
+}
+);
+app.post("/delete-medication", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { medication } = req.body;
+    const medication_name = medication.medication_name;
+
+    const query = `DELETE FROM OngoingMedication WHERE username = $1 AND medication_name = $2;`;
+
+    await pool.query(query, [user_name, medication_name]);
+    res.status(200).json({ message: "Ongoing treatment deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting ongoing treatment");
+    res.status(500).send("Error while deleting ongoing treatment");
+  }
+}
+);
+app.put("/update-medication", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    
+    const { oname, newMedication } = req.body;
+    console.log(req.body);
+    console.log(user_name)
+    console.log(oname)
+
+    const query = `UPDATE OngoingMedication SET medication_name = $1, dosage = $2, start_date = $3, end_date = $4, prescribing_doc = $5 WHERE username = $6 AND medication_name = $7;`;
+    
+    const result = await pool.query(query, [newMedication.medication_name, newMedication.dosage, newMedication.start_date, newMedication.end_date, newMedication.prescribing_doc, user_name,oname]);
+    console.log(result.rows)
+    res.status(200).json({ message: "Ongoing treatment updated successfully" });
+  } catch (error) {
+    console.error("Error updating ongoing treatment", error);
+    res.status(500).send("Error while updating ongoing treatment");
   }
 }
 );

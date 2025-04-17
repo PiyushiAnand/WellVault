@@ -21,23 +21,23 @@ import CancelIcon from "@mui/icons-material/Cancel";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
-
+import { apiUrl } from "../../config/config.js";
 // Layout components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 
 function Prescriptions() {
   const navigate = useNavigate();
+  const [oname,setOname] = useState("");
   const [prescriptions, setPrescriptions] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [newPrescription, setNewPrescription] = useState({
-    medicineName: "",
+    medication_name: "",
     dosage: "",
-    frequency: "",
-    duration: "",
-    instructions: "",
-    prescribedDate: new Date().toISOString().split('T')[0]
+    start_date: new Date().toISOString().split('T')[0],
+    end_date:  new Date().toISOString().split('T')[0],
+    prescribing_doc:""
   });
 
   // Fetch prescriptions from API
@@ -46,27 +46,18 @@ function Prescriptions() {
     const fetchPrescriptions = async () => {
       try {
         // Mock data - replace with actual API call
-        const mockData = [
-          {
-            id: 1,
-            medicineName: "Amoxicillin",
-            dosage: "500mg",
-            frequency: "Twice daily",
-            duration: "7 days",
-            instructions: "Take with food",
-            prescribedDate: "2023-05-15"
-          },
-          {
-            id: 2,
-            medicineName: "Ibuprofen",
-            dosage: "200mg",
-            frequency: "As needed",
-            duration: "30 days",
-            instructions: "Take with water",
-            prescribedDate: "2023-05-10"
-          }
-        ];
-        setPrescriptions(mockData);
+        const response = await fetch(`${apiUrl}/ongoing-medication`, {
+          method: "GET",
+          credentials: "include",
+        });
+        const result = await response.json();
+        if (response.status === 401) {
+          navigate("/");
+        }
+        if (response.status !== 200) {
+          console.error("Error fetching prescriptions:", result);
+        }
+        setPrescriptions(Array.isArray(result.meds) ? result.meds : []);
       } catch (error) {
         console.error("Error fetching prescriptions:", error);
       }
@@ -85,12 +76,11 @@ function Prescriptions() {
 
   const handleAddPrescription = () => {
     setNewPrescription({
-      medicineName: "",
+      medication_name: "",
       dosage: "",
-      frequency: "",
-      duration: "",
-      instructions: "",
-      prescribedDate: new Date().toISOString().split('T')[0]
+      start_date: new Date().toISOString().split('T')[0],
+      end_date:  new Date().toISOString().split('T')[0],
+      prescribing_doc:""
     });
     setEditingIndex(null);
     setOpenDialog(true);
@@ -98,19 +88,52 @@ function Prescriptions() {
 
   const handleEditPrescription = (index) => {
     setNewPrescription(prescriptions[index]);
+    setOname(prescriptions[index].medication_name);
     setEditingIndex(index);
     setOpenDialog(true);
   };
 
-  const handleSavePrescription = () => {
+  const handleSavePrescription = async() => {
     if (editingIndex !== null) {
+
+      //send a put request to update the prescription
+      const response = await fetch(`${apiUrl}/update-medication`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({oname,newMedication: newPrescription}),
+      });
+      const result = await response.json();
+      if (response.status === 401) {
+        navigate("/");
+      }
+      if (response.status !== 200) {
+        console.error("Error updating prescription:", result);
+      }
       // Update existing prescription
       const updated = [...prescriptions];
       updated[editingIndex] = newPrescription;
       setPrescriptions(updated);
     } else {
       // Add new prescription
-      setPrescriptions([...prescriptions, { ...newPrescription, id: Date.now() }]);
+      const response = await fetch(`${apiUrl}/add-medication`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(newPrescription),
+      });
+      const result = await response.json();
+      if (response.status === 401) {
+        navigate("/");
+      }
+      if (response.status !== 200) {
+        console.error("Error adding prescription:", result);
+      }
+      setPrescriptions([...prescriptions, result.med]);
     }
     setOpenDialog(false);
   };
@@ -134,11 +157,11 @@ function Prescriptions() {
         <Grid container spacing={3}>
           {/* Existing Prescriptions */}
           {prescriptions.map((prescription, index) => (
-            <Grid item xs={12} sm={6} md={4} key={prescription.id}>
+            <Grid item xs={12} sm={6} md={4} key={prescription.medication_name||index}>
               <Card sx={{ p: 2, height: "100%", position: "relative" }}>
                 <MDBox display="flex" justifyContent="space-between">
                   <Typography variant="h4" gutterBottom>
-                    {prescription.medicineName}
+                    {prescription.medication_name}
                   </Typography>
                   <MDBox>
                     <IconButton onClick={() => handleEditPrescription(index)}>
@@ -155,16 +178,13 @@ function Prescriptions() {
                     <strong>Dosage:</strong> {prescription.dosage}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Frequency:</strong> {prescription.frequency}
+                    <strong>Start Date:</strong> {prescription.start_date}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Duration:</strong> {prescription.duration}
+                    <strong>End Date:</strong> {prescription.end_date}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Instructions:</strong> {prescription.instructions}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mt={1}>
-                    Prescribed on: {prescription.prescribedDate}
+                    <strong>Prescribing Doc:</strong> {prescription.prescribing_doc}
                   </Typography>
                 </MDBox>
               </Card>
@@ -212,8 +232,8 @@ function Prescriptions() {
                   <TextField
                     fullWidth
                     label="Medicine Name"
-                    name="medicineName"
-                    value={newPrescription.medicineName}
+                    name="medication_name"
+                    value={newPrescription.medication_name}
                     onChange={handleInputChange}
                     required
                   />
@@ -231,36 +251,37 @@ function Prescriptions() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Frequency (e.g., Twice daily)"
-                    name="frequency"
-                    value={newPrescription.frequency}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Duration (e.g., 7 days)"
-                    name="duration"
-                    value={newPrescription.duration}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Prescribed Date"
-                    name="prescribedDate"
+                    label="Start Date"
+                    name="start_date"
                     type="date"
-                    value={newPrescription.prescribedDate}
+                    value={newPrescription.start_date}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="End Date"
+                    name="end_date"
+                    type="date"
+                    value={newPrescription.end_date}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Prescribing Doctor"
+                    name="prescribing_doc"
+                    value={newPrescription.prescribing_doc}
                     onChange={handleInputChange}
                     InputLabelProps={{ shrink: true }}
                     required
                   />
                 </Grid>
-                <Grid item xs={12}>
+                {/* <Grid item xs={12}>
                   <TextField
                     fullWidth
                     label="Special Instructions"
@@ -270,7 +291,7 @@ function Prescriptions() {
                     multiline
                     rows={3}
                   />
-                </Grid>
+                </Grid> */}
               </Grid>
             </MDBox>
           </DialogContent>
