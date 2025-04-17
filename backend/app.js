@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const multer = require("multer");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
@@ -17,8 +18,16 @@ const pool = new Pool({
   port: 5432,
 });
 
+
+
+// Configure storage - here we store the file as a Buffer in memory
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // or whatever limit you need
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
 
 // CORS: Give permission to localhost:3000 (ie our React app)
 // to use this backend API
@@ -400,10 +409,19 @@ app.get("/lab-reports", isAuthenticated, async (req, res) => {
     const user_name = req.session.username;
     const query = `SELECT report_id ,data, report_file FROM LabReports WHERE username = $1;`;
     const result = await pool.query(query, [user_name]);
+
+    const processedData = result.rows.map(row => ({
+      ...row,
+      report_file: row.report_file
+        ? `data:application/octet-stream;base64,${row.report_file.toString("base64")}`
+        : null,
+    }));
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "No lab reports found" });
     }
-    res.status(200).json(result.rows);
+    return res.status(200).json({ data: processedData });
+
+    
   }
   catch (error) {
     console.error("Error getting lab reports", error);
@@ -412,20 +430,37 @@ app.get("/lab-reports", isAuthenticated, async (req, res) => {
 });
 
 
-app.post("/add-lab-report", isAuthenticated, async (req, res) => {
+app.post("/add-lab-report", isAuthenticated, upload.single("report_file"), async (req, res) => {
   try {
     const user_name = req.session.username;
-    const { data, report_file } = req.body;
+    const { data } = req.body;
+    const fileBuffer = req.file ? req.file.buffer : null;
 
     const query = `INSERT INTO LabReports (username, data, report_file) VALUES ($1, $2, $3) returning *;`;
-    const result = await pool.query(query, [user_name, data, report_file]);
-    res.status(201).json({report:result.rows[0]});
+    const result = await pool.query(query, [user_name, data, fileBuffer]);
+    res.status(201).json({ report: result.rows[0] });
   } catch (error) {
     console.error("Error adding lab report", error);
     res.status(500).send("Error while adding lab report");
   }
-}
-);
+});
+
+app.put("/update-lab-report", isAuthenticated, upload.single("report_file"), async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { report_id, data } = req.body;
+    const fileBuffer = req.file ? req.file.buffer : null;
+
+    const query = `UPDATE LabReports SET data = $1, report_file = $2 WHERE username = $3 AND report_id = $4;`;
+    await pool.query(query, [data, fileBuffer, user_name, report_id]);
+
+    res.status(200).json({ message: "Lab report updated successfully" });
+  } catch (error) {
+    console.error("Error updating lab report", error);
+    res.status(500).send("Error while updating lab report");
+  }
+});
+
 app.post("/delete-lab-report", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
