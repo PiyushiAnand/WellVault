@@ -410,3 +410,35 @@ app.get("/lab-reports", isAuthenticated, async (req, res) => {
     res.status(500).send("Error while getting lab reports");
   }
 });
+
+
+app.post("/add-lab-report", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { data, report_file } = req.body;
+
+    const query = `INSERT INTO LabReports (username, data, report_file) VALUES ($1, $2, $3) returning *;`;
+    const result = await pool.query(query, [user_name, data, report_file]);
+    res.status(201).json({report:result.rows[0]});
+  } catch (error) {
+    console.error("Error adding lab report", error);
+    res.status(500).send("Error while adding lab report");
+  }
+}
+);
+app.post("/delete-lab-report", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { report } = req.body;
+    const report_id = report.report_id;
+
+    const query = `DELETE FROM LabReports WHERE username = $1 AND report_id = $2;`;
+
+    await pool.query(query, [user_name, report_id]);
+    res.status(200).json({ message: "Lab report deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting lab report");
+    res.status(500).send("Error while deleting lab report");
+  }
+}
+);

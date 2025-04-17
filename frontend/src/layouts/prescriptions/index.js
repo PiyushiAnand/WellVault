@@ -138,8 +138,24 @@ function Prescriptions() {
     setOpenDialog(false);
   };
 
-  const handleDeletePrescription = (index) => {
+  const handleDeletePrescription = async(index) => {
     const updated = prescriptions.filter((_, i) => i !== index);
+    //send a delete request to delete the prescription
+    const response = fetch(`${apiUrl}/delete-medication`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({medication:prescriptions[index]}),
+    });
+    if (response.status === 401) {
+      navigate("/");
+    }
+    if (response.status !== 200) {
+      console.error("Error deleting prescription");
+    }
+    // Update state
     setPrescriptions(updated);
   };
 
