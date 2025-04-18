@@ -11,7 +11,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  CircularProgress
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -30,10 +31,11 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 function MedicalHistory() {
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true); // added
   const [openDialog, setOpenDialog] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [newRecord, setNewRecord] = useState({
-    date : new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     hospital_name: "",
     diagnosis: ""
   });
@@ -43,32 +45,38 @@ function MedicalHistory() {
       try {
         const response = await fetch(`${apiUrl}/medical-history`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
           credentials: "include"
         });
+
+        if (response.status === 401) {
+          navigate("/");
+          return;
+        }
+
         if (!response.ok) {
           throw new Error("Failed to fetch medical history");
         }
+
         const data = await response.json();
-        setHistory(data.data);
+        setHistory(data.data || []);
       } catch (error) {
         console.error("Error fetching medical history:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchMedicalHistory();
-  }, []);
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewRecord(prev => ({ ...prev, [name]: value }));
+    setNewRecord((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAddRecord = () => {
     setNewRecord({
-      date : new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
       hospital_name: "",
       diagnosis: ""
     });
@@ -82,131 +90,142 @@ function MedicalHistory() {
     setOpenDialog(true);
   };
 
-  const handleSaveRecord = async() => {
-    if (editingIndex !== null) {
+  const handleSaveRecord = async () => {
+    try {
+      if (editingIndex !== null) {
+        const response = await fetch(`${apiUrl}/update-medical-history`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(newRecord)
+        });
 
-      const response = await fetch(`${apiUrl}/update-medical-history`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(newRecord)
-      });
-      const res = await response.json();
-      if (!response.ok) {
-        throw new Error("Failed to update medical history");
-      }
-      // Update the history state with the new record
-      const updated = [...history];
-      updated[editingIndex] = newRecord;
-      setHistory(updated);
-    } else {
+        if (!response.ok) {
+          throw new Error("Failed to update medical history");
+        }
 
-      const response = await fetch(`${apiUrl}/add-medical-history`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(newRecord)
-      });
-      const res = await response.json();
-      if (!response.ok) {
-        throw new Error("Failed to update medical history");
+        const updated = [...history];
+        updated[editingIndex] = newRecord;
+        setHistory(updated);
+      } else {
+        const response = await fetch(`${apiUrl}/add-medical-history`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(newRecord)
+        });
+
+        const res = await response.json();
+        if (!response.ok || !res.record) {
+          throw new Error("Failed to add medical history");
+        }
+
+        setHistory([...history, res.record]);
       }
-      setHistory([...history, res.record]);
+
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error saving medical history:", error);
+      alert("Error saving medical history: " + error.message);
     }
-    setOpenDialog(false);
   };
 
-  const handleDeleteRecord = (index) => {
-
+  const handleDeleteRecord = async (index) => {
     const recordToDelete = history[index];
-    fetch(`${apiUrl}/delete-medical-history`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({record: recordToDelete})
-    })
-    
-    const updated = history.filter((_, i) => i !== index);
-    setHistory(updated);
+    try {
+      await fetch(`${apiUrl}/delete-medical-history`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ record: recordToDelete })
+      });
+
+      const updated = history.filter((_, i) => i !== index);
+      setHistory(updated);
+    } catch (error) {
+      console.error("Error deleting medical history:", error);
+    }
   };
 
   return (
     <DashboardLayout>
       <DashboardNavbar isMini />
       <MDBox py={3}>
-        <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h2">Medical History</Typography>
-          <MDButton variant="gradient" color="info" onClick={handleAddRecord}>
-            <AddIcon /> Add Record
-          </MDButton>
-        </MDBox>
+        {loading ? (
+          <MDBox display="flex" justifyContent="center" alignItems="center" minHeight="40vh">
+            <CircularProgress />
+          </MDBox>
+        ) : (
+          <>
+            <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Typography variant="h2">Medical History</Typography>
+              <MDButton variant="gradient" color="info" onClick={handleAddRecord}>
+                <AddIcon /> Add Record
+              </MDButton>
+            </MDBox>
 
-        <Grid container spacing={3}>
-          {history.map((record, index) => (
-            <Grid item xs={12} sm={6} md={4} key={record.date}>
-              <Card sx={{ p: 2, height: "100%", position: "relative" }}>
-                <MDBox display="flex" justifyContent="space-between">
-                  <Typography variant="h4" gutterBottom>
-                    {record.condition}
+            <Grid container spacing={3}>
+              {history.map((record, index) => (
+                <Grid item xs={12} sm={6} md={4} key={`${record.date}-${index}`}>
+                  <Card sx={{ p: 2, height: "100%", position: "relative" }}>
+                    <MDBox display="flex" justifyContent="space-between">
+                      <Typography variant="h4" gutterBottom>
+                        {record.condition || "Record"}
+                      </Typography>
+                      <MDBox>
+                        <IconButton onClick={() => handleEditRecord(index)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton onClick={() => handleDeleteRecord(index)}>
+                          <DeleteIcon color="error" />
+                        </IconButton>
+                      </MDBox>
+                    </MDBox>
+
+                    <MDBox mt={2}>
+                      <Typography variant="body1">
+                        <strong>Date:</strong> {record.date}
+                      </Typography>
+                      <Typography variant="body1">
+                        <strong>Hospital:</strong> {record.hospital_name}
+                      </Typography>
+                      <Typography variant="body1">
+                        <strong>Diagnosis:</strong> {record.diagnosis}
+                      </Typography>
+                    </MDBox>
+                  </Card>
+                </Grid>
+              ))}
+
+              <Grid item xs={12} sm={6} md={4}>
+                <Card
+                  onClick={handleAddRecord}
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "200px",
+                    cursor: "pointer",
+                    transition: "transform 0.3s",
+                    "&:hover": {
+                      transform: "scale(1.02)",
+                      boxShadow: 6
+                    },
+                    border: "2px dashed",
+                    borderColor: "text.secondary"
+                  }}
+                >
+                  <AddIcon sx={{ fontSize: 48, color: "text.secondary" }} />
+                  <Typography variant="h6" color="text.secondary">
+                    Add New Record
                   </Typography>
-                  <MDBox>
-                    <IconButton onClick={() => handleEditRecord(index)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleDeleteRecord(index)}>
-                      <DeleteIcon color="error" />
-                    </IconButton>
-                  </MDBox>
-                </MDBox>
-                
-                <MDBox mt={2}>
-                  <Typography variant="body1">
-                    <strong> Date:</strong> {record.date}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Hospital:</strong> {record.hospital_name}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Diagnosis</strong> {record.diagnosis}
-                  </Typography>
-                </MDBox>
-              </Card>
+                </Card>
+              </Grid>
             </Grid>
-          ))}
-
-          <Grid item xs={12} sm={6} md={4}>
-            <Card 
-              onClick={handleAddRecord}
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: "200px",
-                cursor: "pointer",
-                transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "scale(1.02)",
-                  boxShadow: 6
-                },
-                border: "2px dashed",
-                borderColor: "text.secondary"
-              }}
-            >
-              <AddIcon sx={{ fontSize: 48, color: "text.secondary" }} />
-              <Typography variant="h6" color="text.secondary">
-                Add New Record
-              </Typography>
-            </Card>
-          </Grid>
-        </Grid>
+          </>
+        )}
 
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
           <DialogTitle>
@@ -221,12 +240,12 @@ function MedicalHistory() {
                     label="Date"
                     name="date"
                     value={newRecord.date}
-                    type = "date"
+                    type="date"
                     onChange={handleInputChange}
                     required
                   />
                 </Grid>
-               
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
@@ -253,12 +272,7 @@ function MedicalHistory() {
             <Button onClick={() => setOpenDialog(false)} startIcon={<CancelIcon />}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSaveRecord} 
-              startIcon={<SaveIcon />}
-              variant="contained"
-              color="primary"
-            >
+            <Button onClick={handleSaveRecord} startIcon={<SaveIcon />} variant="contained" color="primary">
               Save
             </Button>
           </DialogActions>

@@ -487,20 +487,17 @@ app.post("/delete-lab-report", isAuthenticated, async (req, res) => {
 //
 app.get("/medical-history", isAuthenticated, async (req, res) => {
   try{
-
+    console.log("help");
     const user_name = req.session.username;
+    console.log(user_name);
     const query = `SELECT date,hospital_name,diagnosis FROM MedicalHistory WHERE username = $1;`;
     const result = await pool.query(query, [user_name]);
-    const processedData = result.rows.map(row => {
-      return {
-        ...row,
-        date: row.date ? new Date(row.date).toISOString().split('T')[0] : null,
-      };
-    });
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "No medical history found" });
-    }
-    return res.status(200).json({ data: processedData });
+    
+   
+    // if (reult.rows.length === 0) {
+    //   return res.status(404).json({ data:processedData});
+    // }
+    res.status(200).json({ data: result.rows });
   }
 
   catch (error) {
@@ -517,7 +514,7 @@ app.post("/add-medical-history", isAuthenticated, async (req, res) => {
 
     const query = `INSERT INTO MedicalHistory (username, date, hospital_name, diagnosis) VALUES ($1, $2, $3, $4) returning *;`;
     const result = await pool.query(query, [user_name, date, hospital_name, diagnosis]);
-    res.status(201).json({ record: result.rows[0] });
+    res.status(200).json({ record: result.rows[0] });
   } catch (error) {
     console.error("Error adding medical history", error);
     res.status(500).send("Error while adding medical history");
