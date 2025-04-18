@@ -217,11 +217,6 @@ function LabReports() {
                         ) : (
                           <p>No file available</p>
                         )}
-
-
-
-
-
                       </div>
 
                 </MDBox>

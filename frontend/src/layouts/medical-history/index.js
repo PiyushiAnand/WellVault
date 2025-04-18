@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../../config/config.js";
 import {
   Card,
   Grid,
@@ -32,35 +33,26 @@ function MedicalHistory() {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [newRecord, setNewRecord] = useState({
-    condition: "",
-    diagnosisDate: new Date().toISOString().split('T')[0],
-    status: "",
-    treatment: "",
-    notes: ""
+    date : new Date().toISOString().split('T')[0],
+    hospital_name: "",
+    diagnosis: ""
   });
 
   useEffect(() => {
     const fetchMedicalHistory = async () => {
       try {
-        const mockData = [
-          {
-            id: 1,
-            condition: "Hypertension",
-            diagnosisDate: "2018-05-20",
-            status: "Controlled",
-            treatment: "Medication and diet",
-            notes: "Regular checkups needed"
+        const response = await fetch(`${apiUrl}/medical-history`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
           },
-          {
-            id: 2,
-            condition: "Type 2 Diabetes",
-            diagnosisDate: "2020-08-15",
-            status: "Managed",
-            treatment: "Insulin therapy",
-            notes: "Monitor blood sugar levels"
-          }
-        ];
-        setHistory(mockData);
+          credentials: "include"
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch medical history");
+        }
+        const data = await response.json();
+        setHistory(data.data);
       } catch (error) {
         console.error("Error fetching medical history:", error);
       }
@@ -76,11 +68,9 @@ function MedicalHistory() {
 
   const handleAddRecord = () => {
     setNewRecord({
-      condition: "",
-      diagnosisDate: new Date().toISOString().split('T')[0],
-      status: "",
-      treatment: "",
-      notes: ""
+      date : new Date().toISOString().split('T')[0],
+      hospital_name: "",
+      diagnosis: ""
     });
     setEditingIndex(null);
     setOpenDialog(true);
@@ -92,18 +82,56 @@ function MedicalHistory() {
     setOpenDialog(true);
   };
 
-  const handleSaveRecord = () => {
+  const handleSaveRecord = async() => {
     if (editingIndex !== null) {
+
+      const response = await fetch(`${apiUrl}/update-medical-history`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(newRecord)
+      });
+      const res = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to update medical history");
+      }
+      // Update the history state with the new record
       const updated = [...history];
       updated[editingIndex] = newRecord;
       setHistory(updated);
     } else {
-      setHistory([...history, { ...newRecord, id: Date.now() }]);
+
+      const response = await fetch(`${apiUrl}/add-medical-history`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(newRecord)
+      });
+      const res = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to update medical history");
+      }
+      setHistory([...history, res.record]);
     }
     setOpenDialog(false);
   };
 
   const handleDeleteRecord = (index) => {
+
+    const recordToDelete = history[index];
+    fetch(`${apiUrl}/delete-medical-history`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({record: recordToDelete})
+    })
+    
     const updated = history.filter((_, i) => i !== index);
     setHistory(updated);
   };
@@ -121,7 +149,7 @@ function MedicalHistory() {
 
         <Grid container spacing={3}>
           {history.map((record, index) => (
-            <Grid item xs={12} sm={6} md={4} key={record.id}>
+            <Grid item xs={12} sm={6} md={4} key={record.date}>
               <Card sx={{ p: 2, height: "100%", position: "relative" }}>
                 <MDBox display="flex" justifyContent="space-between">
                   <Typography variant="h4" gutterBottom>
@@ -139,16 +167,13 @@ function MedicalHistory() {
                 
                 <MDBox mt={2}>
                   <Typography variant="body1">
-                    <strong>Diagnosis Date:</strong> {record.diagnosisDate}
+                    <strong> Date:</strong> {record.date}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Status:</strong> {record.status}
+                    <strong>Hospital:</strong> {record.hospital_name}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Treatment:</strong> {record.treatment}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Notes:</strong> {record.notes}
+                    <strong>Diagnosis</strong> {record.diagnosis}
                   </Typography>
                 </MDBox>
               </Card>
@@ -193,31 +218,21 @@ function MedicalHistory() {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Condition"
-                    name="condition"
-                    value={newRecord.condition}
+                    label="Date"
+                    name="date"
+                    value={newRecord.date}
+                    type = "date"
                     onChange={handleInputChange}
                     required
                   />
                 </Grid>
+               
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Diagnosis Date"
-                    name="diagnosisDate"
-                    type="date"
-                    value={newRecord.diagnosisDate}
-                    onChange={handleInputChange}
-                    InputLabelProps={{ shrink: true }}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Status"
-                    name="status"
-                    value={newRecord.status}
+                    label="Hospital Name"
+                    name="hospital_name"
+                    value={newRecord.hospital_name}
                     onChange={handleInputChange}
                     required
                   />
@@ -225,21 +240,10 @@ function MedicalHistory() {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Treatment"
-                    name="treatment"
-                    value={newRecord.treatment}
+                    label="Diagnosis"
+                    name="diagnosis"
+                    value={newRecord.diagnosis}
                     onChange={handleInputChange}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Notes"
-                    name="notes"
-                    value={newRecord.notes}
-                    onChange={handleInputChange}
-                    multiline
-                    rows={3}
                   />
                 </Grid>
               </Grid>
