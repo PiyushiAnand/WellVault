@@ -7,6 +7,7 @@ const cors = require("cors");
 const { Pool } = require("pg");
 const app = express();
 const port = 4000;
+const mime = require("mime-types");
 
 // PostgreSQL connection
 // NOTE: use YOUR postgres username and password here
@@ -352,6 +353,8 @@ app.get("/ongoing-medication", isAuthenticated, async (req, res) => {
 );
 
 
+
+
 app.post("/add-medication", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
@@ -410,12 +413,15 @@ app.get("/lab-reports", isAuthenticated, async (req, res) => {
     const query = `SELECT report_id ,data, report_file FROM LabReports WHERE username = $1;`;
     const result = await pool.query(query, [user_name]);
 
-    const processedData = result.rows.map(row => ({
-      ...row,
-      report_file: row.report_file
-        ? `data:application/octet-stream;base64,${row.report_file.toString("base64")}`
-        : null,
-    }));
+    const processedData = result.rows.map(row => {
+      const mimeType = mime.lookup("dummy.pdf"); // replace with real filename if available
+      return {
+        ...row,
+        report_file: row.report_file
+          ? `data:${mimeType || "application/octet-stream"};base64,${row.report_file.toString("base64")}`
+          : null,
+      };
+    });
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "No lab reports found" });
     }

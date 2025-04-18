@@ -26,6 +26,7 @@ import MDButton from "components/MDButton";
 // Layout components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import { reportTypeError } from "ajv/dist/compile/validate/dataType.js";
 
 function LabReports() {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ function LabReports() {
           throw new Error("Failed to fetch lab reports");
         }
         const data = await response.json();
+        console.log("Lab reports data:", data.data);
         setReports(data.data);
       } catch (error) {
         console.error("Error fetching lab reports:", error);
@@ -87,42 +89,70 @@ function LabReports() {
     setOpenDialog(true);
   };
 
-  const handleSaveReport = async() => {
-
-    const formData = new FormData();
-    formData.append("report_id", newReport.report_id);
-    formData.append("data", newReport.data);
-    if (newReport.report_file) {
-      formData.append("report_file", newReport.report_file); // this should be a File object
-    }
-
-    if (editingIndex !== null) {
-
-        //call the api {apiUrl}/update-lab-reports to update the report
-      const response = await fetch(`${apiUrl}/update-lab-report`, {
-        method: "PUT",
-        body: formData,
-        credentials: "include",
-      });
-      if (!response.ok) {
-        console.error("Error updating lab report");
+  const handleSaveReport = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("report_id", newReport.report_id);
+      formData.append("data", newReport.data);
+      if (newReport.report_file instanceof File) {
+        formData.append("report_file", newReport.report_file);
       }
-      else alert("Report updated successfully");
-      const updated = [...reports];
-      updated[editingIndex] = newReport;
-      setReports(updated);
-    } else {
-      console.log("Adding new report");
-      const response = await fetch(`${apiUrl}/add-lab-report`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
+  
+      let response;
+      if (editingIndex !== null) {
+        response = await fetch(`${apiUrl}/update-lab-report`, {
+          method: "PUT",
+          body: formData,
+          credentials: "include",
+        });
+  
+        if (!response.ok) throw new Error("Update failed");
+  
+        alert("Report updated successfully");
+  
+        const updatedReports = [...reports];
+        updatedReports[editingIndex] = {
+          ...newReport,
+          report_file: newReport.report_file.name || "Uploaded File",
+        };
+        setReports(updatedReports);
+      } else {
+        response = await fetch(`${apiUrl}/add-lab-report`, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+  
+        if (!response.ok) throw new Error("Add failed");
+  
+        // Don't parse response if you don't need the backend file in response
+        const result = await response.json();
+        alert("Report added successfully");
+  
+        setReports((prev) => [
+          ...prev,
+          {
+            report_id: result.report.report_id,
+            data: result.report.data,
+            report_file: newReport.report_file.name || "Uploaded File",
+          },
+        ]);
+      }
+  
+      setNewReport({
+        report_id: "",
+        data: "",
+        report_file: "",
       });
-
-      setReports([...reports, newReport]);
+  
+      setOpenDialog(false);
+    } catch (err) {
+      console.error("An error occurred while submitting the report:", err);
+      alert("Something went wrong. Please try again.");
     }
-    setOpenDialog(false);
   };
+  
+  
 
   const handleDeleteReport = async(index) => {
     const reportToDelete = reports[index];
@@ -172,18 +202,28 @@ function LabReports() {
                   <Typography variant="body1">
                     <strong>Description:</strong> {report.data}
                   </Typography>
-                  {report.report_file instanceof File && (
-                    <Typography variant="body2">
-                      <a
-                        href={URL.createObjectURL(report.report_file)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        download={report.report_file.name}
-                      >
-                        Download Report File
-                      </a>
-                    </Typography>
-                  )}
+                      { console.log("Report file:", report.report_file)}
+                      <div key={index}>
+                      {report.report_file && typeof report.report_file === 'string' ? (
+                          <a
+                            href={report.report_file}
+                            download={`lab-report-${report.report_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ textDecoration: "none", color: "#1976d2" }}
+                          >
+                            Download Report
+                          </a>
+                        ) : (
+                          <p>No file available</p>
+                        )}
+
+
+
+
+
+                      </div>
+
                 </MDBox>
 
               </Card>
@@ -236,13 +276,13 @@ function LabReports() {
           />
 
           <Grid item xs={12}>
-
               <Button variant="outlined" component="label" fullWidth>
                 Upload Report File
                 <input
                   type="file"
                   hidden
                   accept=".pdf,.jpg,.jpeg,.png"
+                 
                   onChange={(e) => {
                     const file = e.target.files[0];
                     setNewReport((prev) => ({
@@ -256,7 +296,7 @@ function LabReports() {
               {newReport.report_file && (
                 <MDBox mt={2}>
                   {/* Check if it's a URL or a base64 string */}
-                  {newReport.report_file.startsWith("data:application/octet-stream;base64,") ? (
+                  {typeof newReport.report_file === "string" && newReport.report_file.startsWith("data:application/octet-stream;base64,") ? (
                     // If the file is base64, display it (example for an image)
                     newReport.report_file.includes("pdf") ? (
                       <iframe
@@ -281,24 +321,6 @@ function LabReports() {
                   )}
                 </MDBox>
               )}
-              {/* {newReport.report_file && (
-              <MDBox mt={2}>
-                {typeof newReport.report_file === "string" ? (
-                  <iframe
-                    src={newReport.report_file}
-                    title="report preview"
-                    style={{ width: "100%", height: 300, border: "1px solid #ccc" }}
-                  />
-                ) : (
-                  <iframe
-                    src={URL.createObjectURL(newReport.report_file)}
-                    title="report preview"
-                    style={{ width: "100%", height: 300, border: "1px solid #ccc" }}
-                  />
-                )}
-              </MDBox>
-            )} */}
-
             </Grid>
           </DialogContent>
           <DialogActions>
