@@ -580,13 +580,13 @@ app.post("/add-treatment", isAuthenticated, async (req, res) => {
     const user_name = req.session.username;
     const { treatment_name, doctor, start_date, end_date, status, description } = req.body;
     if(end_date < start_date) {
-      return res.status(401).json({ message: "End date cannot be before start date" });
+      return res.status(400).json({ message: "End date cannot be before start date" });
     }
     // Check if the treatment already exists
     const checkQuery = `SELECT * FROM OngoingTreatment WHERE username = $1 AND treatment_name = $2;`;
     const checkResult = await pool.query(checkQuery, [user_name, treatment_name]);
     if (checkResult.rows.length > 0) {
-      return res.status(401).json({ message: "Treatment already exists" });
+      return res.status(300).json({ message: "Treatment already exists" });
     }
     const query = `INSERT INTO OngoingTreatment (username, treatment_name, doctor, start_date, end_date, status, description) 
                    VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;`;
@@ -604,11 +604,13 @@ app.put("/update-treatment", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
     const { treatment_name, doctor, start_date, end_date, status, description } = req.body;
-    if(end_date < start_date) {
-      return res.status(401).json({ message: "End date cannot be before start date" });
+    const start = new Date(start_date);
+    const end = new Date(end_date);
+    if(end < start) {
+      return res.status(400).json({ message: "End date cannot be before start date" });
     }
     const query = `UPDATE OngoingTreatment SET doctor = $1, start_date = $2, end_date = $3, status = $4, description = $5 WHERE username = $6 AND treatment_name = $7;`;
-    await pool.query(query, [doctor, start_date, end_date, status, description, user_name,treatment_name]);
+    await pool.query(query, [doctor, start_date, end_date, status, description, user_name, treatment_name]);
 
     res.status(200).json({ message: "Treatment updated successfully" });
   } catch (error) {
@@ -634,4 +636,23 @@ app.post("/delete-treatment", isAuthenticated, async (req, res) => {
   }
 }
 );
+
+
+// Insurance APIs
+app.get("/insurance", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const query = `SELECT policy_number, provider_name, coverage_details, valid_from, valid_until, claim_limit FROM Insurance, InsurerData WHERE username = $1;`;
+    const result = await pool.query(query, [user_name]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No insurance found" });
+    }
+
+    res.status(200).json({ insurance: result.rows });
+  } catch (error) {
+    console.error("Error getting insurance", error);
+    res.status(500).send("Error while getting insurance");
+  }
+});
 
