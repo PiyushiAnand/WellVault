@@ -102,7 +102,7 @@ function MedicalHistory() {
           credentials: "include",
           body: JSON.stringify(newRecord)
         });
-
+        if(response.status === 400) {alert("Future date is not allowed"); return;}
         if (!response.ok) {
           throw new Error("Failed to update medical history");
         }
@@ -119,6 +119,8 @@ function MedicalHistory() {
         });
 
         const res = await response.json();
+        if(response.status === 400) {alert("Future date is not allowed"); return;}
+        if(response.status === 300) {alert("medical history already exists"); return;}
         if (!response.ok || !res.record) {
           throw new Error("Failed to add medical history");
         }

@@ -109,6 +109,7 @@ function Prescriptions() {
       if (response.status === 401) {
         navigate("/");
       }
+      if(response.status === 400) {alert("End date can't be before start date"); return;}
       if (response.status !== 200) {
         console.error("Error updating prescription:", result);
       }
@@ -130,6 +131,8 @@ function Prescriptions() {
       if (response.status === 401) {
         navigate("/");
       }
+      if(response.status === 400) {alert("End date can't be before start date"); return;}
+      if(response.status === 300) {alert("prescription already exists"); return;}
       if (response.status !== 200) {
         console.error("Error adding prescription:", result);
       }

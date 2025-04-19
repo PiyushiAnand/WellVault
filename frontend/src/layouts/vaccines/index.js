@@ -175,9 +175,6 @@ function Vaccines() {
       <MDBox py={3}>
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h2">Vaccines</Typography>
-          <MDButton variant="gradient" color="info" onClick={handleAddVaccine}>
-            <AddIcon /> Add Vaccine
-          </MDButton>
         </MDBox>
 
         <Grid container spacing={3}>
@@ -212,6 +209,32 @@ function Vaccines() {
               </Card>
             </Grid>
           ))}
+           <Grid item xs={12} sm={6} md={4}>
+            <Card
+              onClick={handleAddVaccine}
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                minHeight: "200px",
+                border: "2px dashed",
+                borderColor: "text.secondary",
+                transition: "transform 0.3s",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <AddIcon sx={{ fontSize: 48, color: "text.secondary" }} />
+              <Typography variant="h6" color="text.secondary">
+                Add New Vaccine
+              </Typography>
+            </Card>
+          </Grid>
         </Grid>
 
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>

@@ -114,7 +114,7 @@ function Treatments() {
       });
       
       if(response.status == 400){alert("End date can't be before start date");  return;}
-      if(response.status == 300){alert("treatment already exits"); return;}
+      if(response.status == 300){alert("treatment already exists"); return;}
       if(!response.ok) throw new Error("Failed to add treatment");
 
       const result = await response.json();
