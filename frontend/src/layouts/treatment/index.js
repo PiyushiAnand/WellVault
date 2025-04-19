@@ -33,7 +33,6 @@ function Treatments() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [originalName, setOriginalName] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
 
   const [newTreatment, setNewTreatment] = useState({
     treatment_name: "",
@@ -52,7 +51,6 @@ function Treatments() {
           credentials: "include",
         });
         const result = await response.json();
-        //if (response.status === 401) navigate("/");
         if (response.status !== 200) {
           console.error("Error fetching treatments:", result);
         }
@@ -100,12 +98,9 @@ function Treatments() {
         credentials: "include",
         body: JSON.stringify({ oname: originalName, newTreatment }),
       });
-      const result = await response.json();
-    
-      if (response.status !== 200) {
-        console.error("Error updating treatment:", result);
-        setErrorMsg("failed to update treatment");
-      }
+
+      if(response.status == 400){alert("End date can't be before start date"); return;}
+      if(!response.ok) throw new Error("Failed to update treatment");
       
       const updated = [...treatments];
       updated[editingIndex] = newTreatment;
@@ -117,11 +112,12 @@ function Treatments() {
         credentials: "include",
         body: JSON.stringify(newTreatment),
       });
+      
+      if(response.status == 400){alert("End date can't be before start date");  return;}
+      if(response.status == 300){alert("treatment already exits"); return;}
+      if(!response.ok) throw new Error("Failed to add treatment");
+
       const result = await response.json();
-      if (response.status !== 200) {
-        console.error("Error adding treatment:", result);
-        setErrorMsg("failed to add treatment");
-      }
       setTreatments([...treatments, result.treatment]);
     }
     setOpenDialog(false);
