@@ -11,6 +11,7 @@ const Homepage = () => {
 
   const handleSignUp = () => navigate("/authentication/sign-up");
   const handleSignIn = () => navigate("/authentication/sign-in");
+  const handleHospital = () => navigate("/hospital");
 
   return (
     <MDBox
@@ -103,8 +104,24 @@ const Homepage = () => {
               }}
             >
               Sign In
-          </MDButton>
+            </MDButton>
           </MDBox>
+
+          <MDTypography
+            variant="body1"
+            mt={3}  // Margin top to separate from buttons
+            sx={{
+              color: "#2196F3",
+              cursor: "pointer",
+              textDecoration: "underline",
+              "&:hover": {
+                color: "#ffffff",  // Blue color when hovered
+              },
+            }}
+            onClick={handleHospital}
+          >
+            Not a patient? Click here for hospital login
+          </MDTypography>
         </MDBox>
       </Fade>
     </MDBox>
