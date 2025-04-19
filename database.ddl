@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS OngoingMedication CASCADE;
 DROP TABLE IF EXISTS Vaccines CASCADE;
 DROP TABLE IF EXISTS UserHealthData CASCADE;
 DROP TABLE IF EXISTS Users CASCADE;
+DROP TABLE IF EXISTS OngoingTreatment CASCADE;
 
 -- Drop ENUM types if they exist
 DROP TYPE IF EXISTS gender_enum;
@@ -97,6 +98,19 @@ CREATE TABLE Appointments (
     slot_id INT NOT NULL,  
     FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE,
     FOREIGN KEY (slot_id) REFERENCES Slots(slot_id)
+);
+
+-- TREATMENT 
+CREATE TABLE OngoingTreatment (
+    username VARCHAR(5) NOT NULL,
+    Treatment_name VARCHAR(100) NOT NULL,
+    doctor VARCHAR(50) NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    status TEXT CHECK (status IN ('Ongoing', 'Completed', 'Paused')),
+    Description TEXT NOT NULL,
+    PRIMARY KEY (Treatment_name, username),
+    FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE
 );
 
 -- INSURANCE DATA
