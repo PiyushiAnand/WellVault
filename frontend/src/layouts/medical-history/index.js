@@ -76,7 +76,10 @@ function MedicalHistory() {
 
   const handleAddRecord = () => {
     setNewRecord({
-      date: new Date().toISOString().split("T")[0],
+      date: (() => {
+        const [year, month, day] = new Date().toISOString().split("T")[0].split("-");
+        return `${day}-${month}-${year}`;
+      })(),
       hospital_name: "",
       diagnosis: ""
     });
@@ -159,9 +162,7 @@ function MedicalHistory() {
           <>
             <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
               <Typography variant="h2">Medical History</Typography>
-              <MDButton variant="gradient" color="info" onClick={handleAddRecord}>
-                <AddIcon /> Add Record
-              </MDButton>
+
             </MDBox>
 
             <Grid container spacing={3}>

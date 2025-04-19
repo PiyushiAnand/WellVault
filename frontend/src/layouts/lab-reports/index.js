@@ -175,9 +175,6 @@ function LabReports() {
       <MDBox py={3}>
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h2">Lab Reports</Typography>
-          <MDButton variant="gradient" color="info" onClick={handleAddReport}>
-            <AddIcon /> Add Report
-          </MDButton>
         </MDBox>
 
         <Grid container spacing={3}>

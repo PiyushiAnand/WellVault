@@ -165,9 +165,6 @@ function Prescriptions() {
       <MDBox py={3}>
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h2">Prescriptions</Typography>
-          <MDButton variant="gradient" color="info" onClick={handleAddPrescription}>
-            <AddIcon /> Add Prescription
-          </MDButton>
         </MDBox>
 
         <Grid container spacing={3}>
