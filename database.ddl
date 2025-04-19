@@ -113,6 +113,7 @@ CREATE TABLE OngoingTreatment (
     FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE
 );
 
+
 -- INSURANCE DATA
 CREATE TABLE Insurance (
     insurance_id SERIAL PRIMARY KEY,  
