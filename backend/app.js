@@ -668,20 +668,33 @@ app.post("/delete-treatment", isAuthenticated, async (req, res) => {
 
 
 // Insurance APIs
-app.get("/insurance", isAuthenticated, async (req, res) => {
-  try {
-    const user_name = req.session.username;
-    const query = `SELECT policy_number, provider_name, coverage_details, valid_from, valid_until, claim_limit FROM Insurance, InsurerData WHERE username = $1;`;
-    const result = await pool.query(query, [user_name]);
+app.post('/verify-policy', async (req, res) => {
+  const username = req.session.username;
+  const { policy_number, provider_name } = req.body;
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "No insurance found" });
+  try {
+    const insuranceResult = await pool.query(
+      `SELECT * FROM Insurance WHERE policy_number = $1 AND provider_name = $2 AND username = $3`,
+      [policy_number, provider_name, username]
+    );
+
+    if (insuranceResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Policy not found' });
     }
 
-    res.status(200).json({ insurance: result.rows });
-  } catch (error) {
-    console.error("Error getting insurance", error);
-    res.status(500).send("Error while getting insurance");
+    const dataResult = await pool.query(
+      `SELECT * FROM InsurerData WHERE policy_number = $1 AND provider_name = $2`,
+      [policy_number, provider_name]
+    );
+
+    if (dataResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Insurer data not found' });
+    }
+
+    return res.json({ data: dataResult.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
