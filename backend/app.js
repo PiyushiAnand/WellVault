@@ -15,7 +15,7 @@ const pool = new Pool({
   user: "postgres",
   host: "localhost",
   database: "project",
-  password: "postgres",
+  password: "Aak#0907",
   port: 5432,
 });
 
@@ -378,7 +378,7 @@ app.post("/delete-medication", isAuthenticated, async (req, res) => {
     const query = `DELETE FROM OngoingMedication WHERE username = $1 AND medication_name = $2;`;
 
     await pool.query(query, [user_name, medication_name]);
-    res.status(200).json({ message: "Ongoing treatment deleted successfully" });
+    res.status(200).json({ message: "prescription deleted successfully" });
   } catch (error) {
     console.error("Error deleting ongoing treatment");
     res.status(500).send("Error while deleting ongoing treatment");
@@ -554,3 +554,84 @@ app.post("/delete-medical-history", isAuthenticated, async (req, res) => {
   }
 }
 );
+
+
+// Get all ongoing treatments
+app.get("/ongoing-treatment", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const query = `SELECT treatment_name, doctor, start_date, end_date, status, description FROM OngoingTreatment WHERE username = $1;`;
+    const result = await pool.query(query, [user_name]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No ongoing treatment found" });
+    }
+
+    res.status(200).json({ treatments: result.rows });
+  } catch (error) {
+    console.error("Error getting ongoing treatment", error);
+    res.status(500).send("Error while getting ongoing treatment");
+  }
+});
+
+// Add new treatment
+app.post("/add-treatment", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { treatment_name, doctor, start_date, end_date, status, description } = req.body;
+    if(end_date < start_date) {
+      return res.status(401).json({ message: "End date cannot be before start date" });
+    }
+    // Check if the treatment already exists
+    const checkQuery = `SELECT * FROM OngoingTreatment WHERE username = $1 AND treatment_name = $2;`;
+    const checkResult = await pool.query(checkQuery, [user_name, treatment_name]);
+    if (checkResult.rows.length > 0) {
+      return res.status(401).json({ message: "Treatment already exists" });
+    }
+    const query = `INSERT INTO OngoingTreatment (username, treatment_name, doctor, start_date, end_date, status, description) 
+                   VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;`;
+    const result = await pool.query(query, [user_name, treatment_name, doctor, start_date, end_date, status, description]);
+
+    res.status(201).json({ treatment: result.rows[0] });
+  } catch (error) {
+    console.error("Error adding treatment", error);
+    res.status(500).send("Error while adding treatment");
+  }
+});
+
+// update treatment
+app.put("/update-treatment", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { treatment_name, doctor, start_date, end_date, status, description } = req.body;
+    if(end_date < start_date) {
+      return res.status(401).json({ message: "End date cannot be before start date" });
+    }
+    const query = `UPDATE OngoingTreatment SET doctor = $1, start_date = $2, end_date = $3, status = $4, description = $5 WHERE username = $6 AND treatment_name = $7;`;
+    await pool.query(query, [doctor, start_date, end_date, status, description, user_name,treatment_name]);
+
+    res.status(200).json({ message: "Treatment updated successfully" });
+  } catch (error) {
+    console.error("Error updating treatment", error);
+    res.status(500).send("Error while updating treatment");
+  }
+}
+);
+
+// Delete treatment
+app.post("/delete-treatment", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+    const { treatment } = req.body;
+    const treatment_name = treatment.treatment_name;
+    const query = `DELETE FROM OngoingTreatment WHERE username = $1 AND treatment_name = $2;`;
+
+    await pool.query(query, [user_name, treatment_name]);
+    res.status(200).json({ message: "Ongoing treatment deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting ongoing treatment");
+    res.status(500).send("Error while deleting ongoing treatment");
+  }
+}
+);
+
