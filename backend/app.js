@@ -225,23 +225,23 @@ app.post("/profile/edit", isAuthenticated, async (req, res) => {
 });
 
 
-app.get("/medical-history", isAuthenticated, async (req, res) => {
-  try {
-    const user_name = req.session.username;
+// app.get("/medical-history", isAuthenticated, async (req, res) => {
+//   try {
+//     const user_name = req.session.username;
 
-    const query = `SELECT date,hospital_name,diagnosis FROM MedicalHistory WHERE username = $1;`;
-    const result = await pool.query(query, [user_name]);
+//     const query = `SELECT date,hospital_name,diagnosis FROM MedicalHistory WHERE username = $1;`;
+//     const result = await pool.query(query, [user_name]);
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "No medical history found" });
-    }
+//     if (result.rows.length === 0) {
+//       return res.status(404).json({ message: "No medical history found" });
+//     }
 
-    res.status(200).json(result.rows);
-  } catch (error) {
-    console.error("Error getting medical history", error);
-    res.status(500).send("Error while getting medical history");
-  }
-});
+//     res.status(200).json(result.rows);
+//   } catch (error) {
+//     console.error("Error getting medical history", error);
+//     res.status(500).send("Error while getting medical history");
+//   }
+// });
 
 app.get("/vaccines", isAuthenticated, async (req, res) => {
   try {
@@ -359,6 +359,16 @@ app.post("/add-medication", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
     const { medication_name, dosage, start_date, end_date, prescribing_doc } = req.body;
+    //check end date before start date
+    if(end_date < start_date) {
+      return res.status(400).json({ message: "End date cannot be before start date" });
+    }
+    // Check if the medication already exists
+    const checkQuery = `SELECT * FROM OngoingMedication WHERE username = $1 AND medication_name = $2;`;
+    const checkResult = await pool.query(checkQuery, [user_name, medication_name]);
+    if (checkResult.rows.length > 0) {
+      return res.status(300).json({ message: "Medication already exists" });
+    }
 
     const query = `INSERT INTO OngoingMedication (username, medication_name, dosage, start_date, end_date, prescribing_doc) VALUES ($1, $2, $3, $4, $5, $6) returning *;`;
     const result = await pool.query(query, [user_name, medication_name, dosage, start_date, end_date, prescribing_doc]);
@@ -393,6 +403,10 @@ app.put("/update-medication", isAuthenticated, async (req, res) => {
     console.log(req.body);
     console.log(user_name)
     console.log(oname)
+    //check end date before start date
+    if(newMedication.end_date < newMedication.start_date) {
+      return res.status(400).json({ message: "End date cannot be before start date" });
+    }
 
     const query = `UPDATE OngoingMedication SET medication_name = $1, dosage = $2, start_date = $3, end_date = $4, prescribing_doc = $5 WHERE username = $6 AND medication_name = $7;`;
     
@@ -493,10 +507,6 @@ app.get("/medical-history", isAuthenticated, async (req, res) => {
     const query = `SELECT date,hospital_name,diagnosis FROM MedicalHistory WHERE username = $1;`;
     const result = await pool.query(query, [user_name]);
     
-   
-    // if (reult.rows.length === 0) {
-    //   return res.status(404).json({ data:processedData});
-    // }
     res.status(200).json({ data: result.rows });
   }
 
@@ -511,6 +521,19 @@ app.post("/add-medical-history", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
     const { date, hospital_name, diagnosis } = req.body;
+    //check if date is valid 
+    const dateObj = new Date(date);
+    const today = new Date();
+    if (isNaN(dateObj.getTime()) || dateObj > today) {
+      return res.status(400).json({ message: "Invalid date entered." });
+    }
+    // Check if the medical history already exists
+    const checkQuery = `SELECT * FROM MedicalHistory WHERE username = $1 AND date = $2;`;
+    const checkResult = await pool.query(checkQuery, [user_name, date]);
+    if (checkResult.rows.length > 0) {
+      return res.status(300).json({ message: "Medical history already exists" });
+    }
+
 
     const query = `INSERT INTO MedicalHistory (username, date, hospital_name, diagnosis) VALUES ($1, $2, $3, $4) returning *;`;
     const result = await pool.query(query, [user_name, date, hospital_name, diagnosis]);
@@ -526,6 +549,12 @@ app.put("/update-medical-history", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
     const { date, hospital_name, diagnosis } = req.body;
+    //check if date is valid
+    const dateObj = new Date(date);
+    const today = new Date();
+    if (isNaN(dateObj.getTime()) || dateObj > today) {
+      return res.status(400).json({ message: "Invalid date entered." });
+    }
 
     const query = `UPDATE MedicalHistory SET date = $1, hospital_name = $2, diagnosis = $3 WHERE username = $4;`;
     await pool.query(query, [date, hospital_name, diagnosis, user_name]);
