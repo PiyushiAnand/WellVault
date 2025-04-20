@@ -64,11 +64,11 @@ function Dashboard() {
   }, [navigate]);
 
   const medicalCards = [
-    { title: "Empty Slots", icon: "medication", path: "/empty_slots" },
-    { title: "Patient Details", icon: "healing", path: "/patient_details" },
-    { title: "Doctors", icon: "assignment", path: "/doctors" },
-    { title: "BloodBank", icon: "vaccines", path: "/blood" },
-    { title: "Ambulance", icon: "history", path: "/ambulance" },
+    { title: "Empty Slots", icon: "event_available", path: "/empty_slots" },
+    { title: "Patient Details", icon: "groups", path: "/patient_details" },
+    { title: "Doctors", icon: "medical_services", path: "/doctors" },
+    { title: "BloodBank", icon: "bloodtype", path: "/blood" },
+    { title: "Ambulance", icon: "local_shipping", path: "/ambulance" },
   ];
 
   return (
@@ -76,7 +76,7 @@ function Dashboard() {
       <DashboardNavbar />
       <MDBox py={3}>
         <Typography variant="h3" gutterBottom sx={{ mb: 4 }}>
-          Medical Dashboard
+          Hospital Dashboard
         </Typography>
         <Grid container spacing={3}>
           {medicalCards.map((card, index) => (

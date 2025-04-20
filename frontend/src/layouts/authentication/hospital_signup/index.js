@@ -7,7 +7,7 @@ import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 import CoverLayout from "layouts/authentication/components/CoverLayout";
-import bgImage from "assets/images/bgsignup.jpg";
+import bgImage from "assets/images/hosp_signup.jpg";
 import { apiUrl } from "../../../config/config.js";
 import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 
@@ -15,14 +15,14 @@ const Cover = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     hospital_name: "",
     pincode: "",
     address: "",
-    type:"",
-    ambulance_availability:"",
-    blood_bank_availability:"",  
+    type: "",
+    ambulance_availability: "",
+    blood_bank_availability: "",
   });
 
   useEffect(() => {
@@ -82,22 +82,14 @@ const Cover = () => {
 
 Welcome to WellVault. By signing up and using our health platform ("Service"), you agree to be bound by the following Terms and Conditions. Please read them carefully.
 
-1. Eligibility
-By using this website, you confirm that:
-- You are at least 18 years old or have the permission of a parent or guardian.
-- The information you provide is accurate and truthful.
+Eligibility:
+Only properly licensed and registered hospitals recognized by the relevant health authorities are eligible to be listed on our platform. Hospitals must provide valid documentation upon registration.
 
-2. Services Provided
-Our platform allows you to:
-- Store and manage your digital medical records.
-- Track ongoing treatments and medical history.
-- Connect to hospitals and healthcare providers for emergencies and checkups.
-- Share your medical information securely with authorized medical personnel.
+Services Provided:
+Our platform facilitates the management and storage of essential hospital-related information, including blood bank inventories, ambulance availability, patient records, doctor profiles, and appointment slots.
 
-3. Privacy and Data Protection
-- All your medical and personal information will be stored securely and in compliance with applicable data protection laws.
-- We do not sell your data to third parties.
-- You have control over who can access your information.`);
+Data Accuracy & Compliance:
+Hospitals are responsible for ensuring that all data entered — including slot timings, staff availability, and medical resources — is accurate and regularly updated.`);
   };
 
   return (
@@ -105,9 +97,9 @@ Our platform allows you to:
       <Card>
         <MDBox
           variant="gradient"
-          bgColor="info"
+          bgColor="warning"
           borderRadius="lg"
-          coloredShadow="success"
+          coloredShadow="warning"
           mx={2}
           mt={-3}
           p={3}
@@ -124,58 +116,77 @@ Our platform allows you to:
         <MDBox pt={4} pb={3} px={3}>
           <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
-              <MDInput type="text" label="Hospital Name" name="hospital_name" fullWidth onChange={handleChange} value={formData.hospital_name} />
+              <MDInput
+                type="text"
+                label="Hospital Name"
+                name="hospital_name"
+                fullWidth
+                onChange={handleChange}
+                value={formData.hospital_name}
+              />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="pincode" label="pincode" name="pincode" fullWidth onChange={handleChange} value={formData.pincode} />
+              <MDInput
+                type="text"
+                label="Pincode"
+                name="pincode"
+                fullWidth
+                onChange={handleChange}
+                value={formData.pincode}
+              />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="text" label="Address" name="address" fullWidth onChange={handleChange} value={formData.address} />
+              <MDInput
+                type="text"
+                label="Address"
+                name="address"
+                fullWidth
+                onChange={handleChange}
+                value={formData.address}
+              />
             </MDBox>
-             <MDBox mb={2}>
-                          <select
-                            name="type"
-                            value={formData.type}
-                            onChange={handleChange}
-                            className="w-[300px] p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          >
-                            <option value="">Select type</option>
-                            <option value="Public">Public</option>
-                            <option value="Private">Private</option>
-                          </select>
+            <MDBox mb={2}>
+              <select
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                className="w-[300px] p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              >
+                <option value="">Select type</option>
+                <option value="Public">Public</option>
+                <option value="Private">Private</option>
+              </select>
             </MDBox>
-          
 
-              <MDBox mb={2}>
-                <FormControl component="fieldset" fullWidth>
-                  <FormLabel component="legend">Ambulance Availability</FormLabel>
-                  <RadioGroup
-                    row
-                    name="ambulance_availability"
-                    value={formData.ambulance_availability}
-                    onChange={handleChange}
-                  >
-                    <FormControlLabel value="true" control={<Radio />} label="Yes" />
-                    <FormControlLabel value="false" control={<Radio />} label="No" />
-                  </RadioGroup>
-                </FormControl>
-              </MDBox>
+            <MDBox mb={2}>
+              <FormControl component="fieldset" fullWidth>
+                <FormLabel component="legend">Ambulance Availability</FormLabel>
+                <RadioGroup
+                  row
+                  name="ambulance_availability"
+                  value={formData.ambulance_availability}
+                  onChange={handleChange}
+                >
+                  <FormControlLabel value="true" control={<Radio />} label="Yes" />
+                  <FormControlLabel value="false" control={<Radio />} label="No" />
+                </RadioGroup>
+              </FormControl>
+            </MDBox>
 
-          
-              <MDBox mb={2}>
-                <FormControl component="fieldset" fullWidth>
-                  <FormLabel component="legend">Blood Bank Availability</FormLabel>
-                  <RadioGroup
-                    row
-                    name="blood_bank_availability"
-                    value={formData.blood_bank_availability}
-                    onChange={handleChange}
-                  >
-                    <FormControlLabel value="true" control={<Radio />} label="Yes" />
-                    <FormControlLabel value="false" control={<Radio />} label="No" />
-                  </RadioGroup>
-                </FormControl>
-              </MDBox>
+            <MDBox mb={2}>
+              <FormControl component="fieldset" fullWidth>
+                <FormLabel component="legend">Blood Bank Availability</FormLabel>
+                <RadioGroup
+                  row
+                  name="blood_bank_availability"
+                  value={formData.blood_bank_availability}
+                  onChange={handleChange}
+                >
+                  <FormControlLabel value="true" control={<Radio />} label="Yes" />
+                  <FormControlLabel value="false" control={<Radio />} label="No" />
+                </RadioGroup>
+              </FormControl>
+            </MDBox>
 
             <MDBox display="flex" alignItems="center">
               <Checkbox />
@@ -187,7 +198,7 @@ Our platform allows you to:
                 onClick={showTermsAlert}
                 variant="button"
                 fontWeight="bold"
-                color="info"
+                color="warning"
                 style={{ cursor: "pointer" }}
               >
                 Terms and Conditions
@@ -196,15 +207,21 @@ Our platform allows you to:
             {error && <MDTypography color="error">{error}</MDTypography>}
             {success && <MDTypography color="success">{success}</MDTypography>}
 
-            <MDButton variant="gradient" color="info" fullWidth type="submit">
+            <MDButton variant="gradient" color="warning" fullWidth type="submit">
               Sign Up
             </MDButton>
 
             <MDBox mt={3} mb={1} textAlign="center">
               <MDTypography variant="button" color="text">
                 Already have an account?{" "}
-                <MDTypography component={Link} to="/authentication/hospital-sign-in" variant="button" color="info" fontWeight="medium">
-                  Sign In
+                <MDTypography
+                  component={Link}
+                  to="/authentication/hospital-sign-in"
+                  variant="button"
+                  color="warning"
+                  fontWeight="medium"
+                >
+                  Sign in
                 </MDTypography>
               </MDTypography>
             </MDBox>

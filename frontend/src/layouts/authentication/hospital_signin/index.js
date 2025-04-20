@@ -14,14 +14,10 @@ Coded by www.creative-tim.com
 */
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 // @mui components
 import Card from "@mui/material/Card";
-import Switch from "@mui/material/Switch";
-
-
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -33,7 +29,7 @@ import MDButton from "components/MDButton";
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 
 // Images
-import bgImage from "assets/images/bgsignin.jpg";
+import bgImage from "assets/images/hosp_signin.jpg";
 import { apiUrl } from "../../../config/config.js";
 
 function Basic() {
@@ -106,9 +102,9 @@ function Basic() {
       <Card>
         <MDBox
           variant="gradient"
-          bgColor="info"
+          bgColor="warning" // changed to yellow
           borderRadius="lg"
-          coloredShadow="info"
+          coloredShadow="warning" // changed to yellow
           mx={2}
           mt={-3}
           p={2}
@@ -118,7 +114,6 @@ function Basic() {
           <MDTypography variant="h4" fontWeight="medium" color="white" mt={1}>
             Sign in
           </MDTypography>
-         
         </MDBox>
         <MDBox pt={4} pb={3} px={3}>
           <MDBox component="form" role="form" onSubmit={handleSubmit}>
@@ -151,9 +146,8 @@ function Basic() {
               </MDBox>
             )}
 
-
             <MDBox mt={2} mb={1}>
-              <MDButton variant="gradient" color="info" fullWidth type="submit">
+              <MDButton variant="gradient" color="warning" fullWidth type="submit">
                 Sign in
               </MDButton>
             </MDBox>
@@ -165,11 +159,11 @@ function Basic() {
                   component={Link}
                   to="/authentication/hospital-sign-up"
                   variant="button"
-                  color="info"
+                  color="warning"
                   fontWeight="medium"
                   textGradient
                 >
-                  Sign up
+                  Sign Up
                 </MDTypography>
               </MDTypography>
             </MDBox>

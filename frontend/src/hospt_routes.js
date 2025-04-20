@@ -4,19 +4,20 @@ import Doctor from "layouts/doctors";
 import Patients from "layouts/patients";
 import Empty_Slots from "layouts/empty_slots";
 import HospitalDashboard from "layouts/hospitaldashboard";
+import Logout from "layouts/authentication/logout";
 
 import Icon from "@mui/material/Icon";
 
 const hospital_routes = [
-//   {
-//     type: "collapse",
-//     name: "Hospital Dashboard",
-//     key: "hospitaldashboard",
-//     icon: <Icon fontSize="small">dashboard</Icon>,
-//     route: "/hospitaldashboard",
-//     component: <HospitalDashboard />,
-//     layout: "hosp_dash",
-//   },
+  {
+    type: "collapse",
+    name: "Hospital Dashboard",
+    key: "hospitaldashboard",
+    icon: <Icon fontSize="small">dashboard</Icon>,
+    route: "/hospitaldashboard",
+    component: <HospitalDashboard />,
+    layout: "hosp_dash",
+  },
   {
     type: "collapse",
     name: "Empty Slots",
@@ -56,12 +57,21 @@ const hospital_routes = [
   {
     type: "collapse",
     name: "Blood Bank",
-    key: "blood",
+    key: "bloodbank",
     icon: <Icon fontSize="small">bloodtype</Icon>,
-    route: "/blood",
+    route: "/bloodbank",
     component: <Blood />,
     layout: "hosp_dash",
   },
+  {
+    type: "collapse",
+    name: "Logout",
+    key: "logout",
+    icon: <Icon fontSize="small" style={{ color: "red" }}>logout</Icon>,
+    route: "/logout",
+    component: <Logout />,
+    color: "error", // This uses the theme's error color (red)
+  }
 ];
 
 export default hospital_routes;
