@@ -44,6 +44,8 @@ import Notifications from "layouts/notifications";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
+import HospitalSignIn from "layouts/authentication/hospital_signin";
+import HospitalSignUp from "layouts/authentication/hospital_signup";
 
 // Add these imports at the top
 import Prescriptions from "layouts/prescriptions";
@@ -54,6 +56,7 @@ import MedicalHistory from "layouts/medical-history";
 import Insurance from "layouts/insurance";
 import Logout from "layouts/authentication/logout";
 import Homepage from "layouts/homepage";
+import HospitalDashboard from "layouts/hospitaldashboard";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -186,7 +189,36 @@ const routes = [
     color: "error", // This uses the theme's error color (red)
   },
 
-  
+  {
+    type: "auth",
+    name: "Sign Up hospital",
+    key: "sign-up-hosp",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/authentication/hospital-sign-up",
+    component: <HospitalSignUp />,
+  }
+  ,
+
+  {
+    type: "auth",
+    name: "Sign In hospital",
+    key: "sign-in-hosp",
+    icon: <Icon fontSize="small">login</Icon>,
+    route: "/authentication/hospital-sign-in",
+    component: <HospitalSignIn />,
+  },
+
+  {
+    type: "hospital",
+    name: "Hospital Dashboard",
+    key: "hospitaldashboard",
+    icon: <Icon fontSize="small">dashboard</Icon>,
+    route: "/hospitaldashboard",
+    component: <HospitalDashboard />,
+    layout:"dashboard"
+    
+  }
+
 ];
 
 export default routes;

@@ -30,6 +30,7 @@ import themeDark from "assets/theme-dark";
 
 // Routes
 import routes from "routes";
+import hospital_routes from "hospt_routes";
 
 // Contexts
 import {
@@ -92,10 +93,25 @@ export default function App() {
   useEffect(() => {
     if (pathname === "/") {
       setLayout(dispatch, "homepage");
-    } else if(!(pathname === "/authentication/sign-in") && !(pathname === "/authentication/sign-up")) {
+    } else if (
+      pathname === "/authentication/sign-in" ||
+      pathname === "/authentication/sign-up"
+    ) {
+      setLayout(dispatch, "auth");
+    } else if (
+      pathname === "/authentication/hospital-sign-in" ||
+      pathname === "/authentication/hospital-sign-up"
+    ) {
+      setLayout(dispatch, "hospitalauth");
+    } 
+    else if(
+      pathname === "/hospitaldashboard"
+    ) setLayout(dispatch, "hosp_dash");
+    else {
       setLayout(dispatch, "dashboard");
     }
   }, [pathname, dispatch]);
+  
   
 
   // Generate Route components
@@ -161,12 +177,33 @@ export default function App() {
          
         </>
       )}
+
+      {layout === "hosp_dash" && (
+        <>
+          <Sidenav
+            color={sidenavColor}
+            brand={
+              (transparentSidenav && !darkMode) || whiteSidenav
+                ? brandDark
+                : brandWhite
+            }
+            brandName="Hospital Dashboard"
+            routes={hospital_routes}
+            onMouseEnter={handleOnMouseEnter}
+            onMouseLeave={handleOnMouseLeave}
+          />
+          <Configurator />
+         
+        </>
+      )}
+      
       {layout === "vr" && <Configurator />}
 
       <Routes>
-        {getRoutes(routes)}
+        {getRoutes(layout === "hosp_dash" ? hospital_routes : routes)}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+
     </ThemeProvider>
   );
 }

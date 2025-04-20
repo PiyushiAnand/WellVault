@@ -137,9 +137,10 @@ CREATE TABLE Hospitals (
     hosp_id SERIAL PRIMARY KEY,  
     hospital_name VARCHAR(100) NOT NULL,
     pincode VARCHAR(10) NOT NULL,
+    address VARCHAR(500) NOT NULL,
     type hospital_type_enum NOT NULL,
-    ambulance_availability BOOLEAN NOT NULL DEFAULT TRUE,
-    blood_bank_availability BOOLEAN NOT NULL DEFAULT FALSE
+    ambulance_availability BOOLEAN NOT NULL,
+    blood_bank_availability BOOLEAN NOT NULL
 );
 
 CREATE TABLE Doctors (

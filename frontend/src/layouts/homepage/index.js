@@ -11,7 +11,7 @@ const Homepage = () => {
 
   const handleSignUp = () => navigate("/authentication/sign-up");
   const handleSignIn = () => navigate("/authentication/sign-in");
-  const handleHospital = () => navigate("/hospital");
+  const handleHospital = () => navigate("/authentication/hospital-sign-up");
 
   return (
     <MDBox

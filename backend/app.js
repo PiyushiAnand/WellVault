@@ -698,3 +698,74 @@ app.post('/verify-policy', async (req, res) => {
   }
 });
 
+
+
+
+app.post("/hospital/signup", async (req, res) => {
+  const { hospital_name, pincode, address, type, ambulance_availability, blood_bank_availability } = req.body;
+
+  if (!/^\d{6}$/.test(pincode)) {
+    return res.status(400).json({ message: "Pincode must be exactly 6 digits" });
+  }
+
+  try {
+    // INSERT and RETURN the generated hosp_id
+    const result = await pool.query(
+      `INSERT INTO Hospitals 
+      (hospital_name, pincode, address, type, ambulance_availability, blood_bank_availability)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING hosp_id;`,
+      [hospital_name, pincode, address, type, ambulance_availability, blood_bank_availability]
+    );
+
+    const hosp_id = result.rows[0].hosp_id;
+    req.session.hosp_id = hosp_id;
+
+    res.status(201).json({ message: "User Registered Successfully", hosp_id });
+  } catch (err) {
+    console.error("Signup error:", err);
+    res.status(500).json({ message: "Error signing up" });
+  }
+});
+
+
+
+app.post("/hospital/login", async (req, res) => {
+const { hosp_id, hospital_name } = req.body;
+try {
+  const result = await pool.query("SELECT * FROM hospitals WHERE hosp_id = $1;", [
+    hosp_id,
+  ]);
+  const user = result.rows[0];
+
+  if (user) {
+    req.session.hosp_id = user.hosp_id;
+    res.status(200).json({ message: "Login successful" });
+  } else {
+      console.log("Invalid credentials");
+    res.status(400).json({ message: "Invalid credentials" });
+  }
+} catch (err) {
+  console.error(err);
+  res.status(500).json({ message: "Error logging in" });
+}
+});
+
+app.get("/hospital/isLoggedIn", async (req, res) => {
+if (req.session.hosp_id) {
+  res
+    .status(200)
+    .json({ message: "Logged in", hosp_id: req.session.hosp_id});
+} else {
+  return res.status(401).json({ message: "Not logged in" });
+}
+});
+
+app.post("/hospital/logout", (req, res) => {
+req.session.destroy((err) => {
+  if (err) return res.status(500).json({ message: "Failed to log out" });
+  res.clearCookie("connect.sid");
+  res.status(200).json({ message: "Logged out successfully" });
+});
+});
+
