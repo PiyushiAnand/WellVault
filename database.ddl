@@ -134,10 +134,10 @@ CREATE TABLE InsurerData (
 );
 
 CREATE TABLE AvailablePolicies (
-    policy_name VARCHAR(50) PRIMARY KEY;
+    policy_name VARCHAR(100) PRIMARY KEY;
     provider_name VARCHAR(100) NOT NULL,
     coverage_details TEXT NOT NULL,
-    duration 
+    duration INTEGER NOT NULL,
     claim_limit DECIMAL(10,2) NOT NULL
 );
 

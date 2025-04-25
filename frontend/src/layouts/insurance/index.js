@@ -66,7 +66,7 @@ function VerifyInsurance() {
 
   const fetchAvailablePlans = async () => {
     try {
-      const response = await fetch(`${apiUrl}/available-plans`);
+      const response = await fetch(`${apiUrl}/available-policies`);
       const data = await response.json();
       if (response.ok) setAvailablePlans(data);
     } catch (error) {
