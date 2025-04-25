@@ -82,12 +82,11 @@ CREATE TABLE LabReports (
     report_file BYTEA NOT NULL,  
     FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE
 );
-
 CREATE TABLE Slots (
-    slot_id SERIAL PRIMARY KEY,  
-    time TIME NOT NULL,
-    timings VARCHAR(10) NOT NULL CHECK (timings IN ('8:30', '9:30', '10:30', '11:30', '12:30'))
+    slot_id INTEGER PRIMARY KEY,  
+    timings VARCHAR(10) NOT NULL CHECK (timings IN ('8:30 AM', '9:30 AM', '10:30 AM', '11:30 AM', '12:30 PM', '5:30 PM', '6:30 PM', '7:30 PM', '8:30 PM', '9:30 PM'))
 );
+
 
 CREATE TABLE Appointments (
     apt_id SERIAL PRIMARY KEY,  
@@ -151,3 +150,11 @@ CREATE TABLE Doctors (
     FOREIGN KEY (hosp_id) REFERENCES Hospitals(hosp_id) ON DELETE CASCADE
 );
 
+CREATE TABLE Doctor_slots (
+
+    doc_id INT not null,
+    slot_id int not null,
+    date TEXT NOT NULL,
+    booked BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (doc_id, slot_id, date)
+);
