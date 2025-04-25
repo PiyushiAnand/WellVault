@@ -12,10 +12,10 @@ const mime = require("mime-types");
 // PostgreSQL connection
 // NOTE: use YOUR postgres username and password here
 const pool = new Pool({
-  user: "postgres",
+  user: "test",
   host: "localhost",
   database: "project",
-  password: "Aak#0907",
+  password: "test",
   port: 5432,
 });
 
@@ -668,7 +668,23 @@ app.post("/delete-treatment", isAuthenticated, async (req, res) => {
 
 
 // Insurance APIs
-app.post('/verify-policy', async (req, res) => {
+
+app.get('/insurance', isAuthenticated, async (req, res) => {
+  const username = req.session.username;
+  try {
+    const result = await pool.query(
+      `SELECT * FROM Insurance WHERE username = $1`,
+      [username]
+    );
+    const record = result.rows.length > 0 ? result.rows[0] : null;
+    return res.json({ data: result.rows });
+  } catch (err) {
+    console.error("Error loading insurance page");
+    res.status(500).json({ message: 'Error loading insurance page' });
+  }
+});
+
+app.post('/insurance/verify-policy', async (req, res) => {
   const username = req.session.username;
   const { policy_number, provider_name } = req.body;
 
@@ -698,6 +714,32 @@ app.post('/verify-policy', async (req, res) => {
   }
 });
 
+app.post('/insurance/add-new-insurance', isAuthenticated, async (req, res) => {
+  const username = req.session.username;
+  const { policy_name, provider_name, start_date, amount} = req.body;
+
+  // const add_query = 
+
+});
+
+app.post('/insurance/add-existing-insurance', isAuthenticated, async (req, res) => {
+  const username = req.session.username;
+});
+
+app.get('/insurance/available-policies', isAuthenticated, async (req, res) => {
+  const username = req.session.username;
+  const query = `SELECT * FROM AvailablePolicies;`;
+  try {
+    const result = await pool(query, []);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No policies available" });
+    }
+    res.status(200).json({ policies: result.rows });
+  } catch (error) {
+    console.error("Error getting available policies", error);
+    res.status(500).send("Error fetching available policies");
+  }
+});
 
 
 

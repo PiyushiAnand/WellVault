@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS Doctors CASCADE;
 DROP TABLE IF EXISTS Hospitals CASCADE;
 DROP TABLE IF EXISTS InsurerData CASCADE;
 DROP TABLE IF EXISTS Insurance CASCADE;
+DROP TABLE IF EXISTS AvailablePolicies CASCADE;
 DROP TABLE IF EXISTS Appointments CASCADE;
 DROP TABLE IF EXISTS Slots CASCADE;
 DROP TABLE IF EXISTS LabReports CASCADE;
@@ -129,6 +130,14 @@ CREATE TABLE InsurerData (
     coverage_details TEXT NOT NULL,
     valid_from DATE NOT NULL,
     valid_until DATE NOT NULL,
+    claim_limit DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE AvailablePolicies (
+    policy_name VARCHAR(50) PRIMARY KEY;
+    provider_name VARCHAR(100) NOT NULL,
+    coverage_details TEXT NOT NULL,
+    duration 
     claim_limit DECIMAL(10,2) NOT NULL
 );
 
