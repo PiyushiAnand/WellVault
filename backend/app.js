@@ -274,7 +274,7 @@ app.post("/add-vaccine", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
     const { vaccine_name, no_of_dose, year_administered, administering_hospital } = req.body;
-    console.log(req.body);
+    //console.log(req.body);
     
     const currentYear = new Date().getFullYear();
     const year = Number(year_administered);
@@ -299,7 +299,7 @@ app.post("/delete-vaccine", isAuthenticated, async (req, res) => {
     const user_name = req.session.username;
     const { vaccine } = req.body;
     const vaccine_name = vaccine.vaccine_name;
-    console.log(vaccine)
+   // console.log(vaccine)
     const query = `DELETE FROM Vaccines WHERE username = $1 AND vaccine_name = $2;`;
 
     await pool.query(query, [user_name, vaccine_name]);
@@ -317,9 +317,9 @@ app.put("/update-vaccine", isAuthenticated, async (req, res) => {
     
     const { oname, newVaccine } = req.body;
     // console.log(req.body.newVaccine.vaccine_name);
-    console.log(req.body);
-    console.log(user_name)
-    console.log(oname)
+    // console.log(req.body);
+    // console.log(user_name)
+    // console.log(oname)
     const currentYear = new Date().getFullYear();
     const year = Number(newVaccine.year_administered);
 
@@ -328,11 +328,11 @@ app.put("/update-vaccine", isAuthenticated, async (req, res) => {
     }
 
     const res1 = await pool.query(`Select * from vaccines where username = $1 and vaccine_name = $2`,[user_name,oname]);
-    console.log(res1.rows);
+    // console.log(res1.rows);
     const query = `UPDATE Vaccines SET vaccine_name = $1, no_of_dose = $2, year_administered = $3, administering_hospital = $4 WHERE username = $5 AND vaccine_name = $6;`;
     
     const result = await pool.query(query, [newVaccine.vaccine_name, newVaccine.no_of_dose, newVaccine.year_administered, newVaccine.administering_hospital, user_name,oname]);
-    console.log(result.rows)
+    // console.log(result.rows)
     res.status(200).json({ message: "Vaccine updated successfully" });
   } catch (error) {
     console.error("Error updating vaccine", error);
@@ -409,9 +409,9 @@ app.put("/update-medication", isAuthenticated, async (req, res) => {
     const user_name = req.session.username;
     
     const { oname, newMedication } = req.body;
-    console.log(req.body);
-    console.log(user_name)
-    console.log(oname)
+    // console.log(req.body);
+    // console.log(user_name)
+    // console.log(oname)
     //check end date before start date
     if(newMedication.end_date < newMedication.start_date) {
       return res.status(400).json({ message: "End date cannot be before start date" });
@@ -420,7 +420,7 @@ app.put("/update-medication", isAuthenticated, async (req, res) => {
     const query = `UPDATE OngoingMedication SET medication_name = $1, dosage = $2, start_date = $3, end_date = $4, prescribing_doc = $5 WHERE username = $6 AND medication_name = $7;`;
     
     const result = await pool.query(query, [newMedication.medication_name, newMedication.dosage, newMedication.start_date, newMedication.end_date, newMedication.prescribing_doc, user_name,oname]);
-    console.log(result.rows)
+    // console.log(result.rows)
     res.status(200).json({ message: "Ongoing treatment updated successfully" });
   } catch (error) {
     console.error("Error updating ongoing treatment", error);
@@ -510,9 +510,9 @@ app.post("/delete-lab-report", isAuthenticated, async (req, res) => {
 //
 app.get("/medical-history", isAuthenticated, async (req, res) => {
   try{
-    console.log("help");
+    // console.log("help");
     const user_name = req.session.username;
-    console.log(user_name);
+   // console.log(user_name);
     const query = `SELECT date,hospital_name,diagnosis FROM MedicalHistory WHERE username = $1;`;
     const result = await pool.query(query, [user_name]);
     
@@ -790,14 +790,14 @@ app.post("/doctorwise-slots", ishospAuthenticated, async (req, res) => {
                  NATURAL JOIN Doctors join slots s on s.slot_id = ds.slot_id
                  WHERE hosp_id = $1`;
     const params = [hosp_id];
-    console.log()
+    // console.log()
     if (date) {
       query += ` AND ds.date = $2`;
       params.push(date);
     }
 
     const result = await pool.query(query, params);
-    console.log(result.rows);
+    // console.log(result.rows);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "No slots found" });
     }
@@ -808,3 +808,138 @@ app.post("/doctorwise-slots", ishospAuthenticated, async (req, res) => {
     res.status(500).send("Error while getting doctor-wise slots");
   }
 });
+
+
+//get request to get all hospitals
+app.get("/hospital",isAuthenticated ,async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM Hospitals;");
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No hospitals found" });
+    }
+    res.status(200).json({ hospitals: result.rows });
+  } catch (error) {
+    console.error("Error getting hospitals", error);
+    res.status(500).send("Error while getting hospitals");
+  }
+});
+
+//get request to get all doctors
+app.post("/doctor",isAuthenticated ,async (req, res) => {
+  try {
+    const hospital_name = req.body.hospital_name;
+    const pincode = req.body.pincode;
+
+    const hosp_id = await pool.query("SELECT hosp_id FROM Hospitals WHERE hospital_name = $1 AND pincode = $2;", [hospital_name, pincode]);
+    if (hosp_id.rows.length === 0) {
+      return res.status(404).json({ message: "No hospitals found" });
+    }
+  
+    const result = await pool.query("SELECT * FROM Doctors where hosp_id = $1;",[hosp_id.rows[0].hosp_id]);
+    // console.log(result.rows);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No doctors found" });
+    }
+    res.status(200).json({ doctors: result.rows });
+  } catch (error) {
+    console.error("Error getting doctors", error);
+    res.status(500).send("Error while getting doctors");
+  }
+});
+//get request to get all slots
+app.post("/slots", isAuthenticated, async (req, res) => {
+  try {
+    const { doc_name, date, hospital_name, pincode } = req.body;
+
+    // First, get hosp_id from hospital_name & pincode
+    const hospRes = await pool.query(
+      "SELECT hosp_id FROM Hospitals WHERE hospital_name = $1 AND pincode = $2;",
+      [hospital_name, pincode]
+    );
+    if (hospRes.rows.length === 0) {
+      return res.status(404).json({ message: "No hospital found" });
+    }
+
+    const hosp_id = hospRes.rows[0].hosp_id;
+
+    // Then, get doc_id
+    const docRes = await pool.query(
+      "SELECT doc_id FROM Doctors WHERE hosp_id = $1 AND doc_name = $2;",
+      [hosp_id, doc_name]
+    );
+    if (docRes.rows.length === 0) {
+      return res.status(404).json({ message: "No doctor found" });
+    }
+
+    const doc_id = docRes.rows[0].doc_id;
+
+    // Finally, get available slots
+    const result = await pool.query(
+      "SELECT * FROM Doctor_slots s NATURAL JOIN Slots WHERE s.doc_id = $1 AND s.date = $2;",
+      [doc_id, date]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No slots found" });
+    }
+
+    res.status(200).json({ slots: result.rows });
+  } catch (error) {
+    console.error("Error getting slots", error);
+    res.status(500).send("Error while getting slots");
+  }
+});
+app.post("/appointments", isAuthenticated, async (req, res) => {
+  try {
+    const { hosp, doc, a_date, slot } = req.body;
+    console.log(req.body);
+    
+    const hospital_name = hosp;
+    const doc_name = doc;
+    const date = new Date(a_date);  // Convert the date string to a Date object
+    const slot_id = slot;
+    
+    // Check if the date is in the future
+    const currentDate = new Date();
+    if (date <= currentDate) {
+      return res.status(400).json({ message: "Appointment date must be in the future" });
+    }
+
+    // Insert appointment into the database
+    await pool.query(
+      "INSERT INTO Appointments (username, hospital_name, doctor_name, appointment_date, slot_id) VALUES ($1, $2, $3, $4, $5);",
+      [req.session.username, hospital_name, doc_name, date, slot_id]
+    );
+
+    // Update the slot to booked
+    await pool.query(
+      "UPDATE Doctor_slots SET booked = true WHERE doc_id = (SELECT doc_id FROM Doctors WHERE hosp_id = (SELECT hosp_id FROM Hospitals WHERE hospital_name = $1) AND doc_name = $2) AND date = $3 AND slot_id = $4;",
+      [hospital_name, doc_name, date, slot_id]
+    );
+
+    res.status(200).json({ message: "Appointment booked successfully" });
+  } catch (error) {
+    console.error("Error booking appointment", error);
+    res.status(500).send("Error while booking appointment");
+  }
+});
+
+
+app.get("/appointments", isAuthenticated, async (req, res) => {
+  try {
+    const user_name = req.session.username;
+
+    const query = `SELECT * FROM Appointments natural join slots WHERE username = $1;`;
+    const result = await pool.query(query, [user_name]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No appointments found" });
+    }
+
+    res.status(200).json({ data: result.rows });
+  } catch (error) {
+    console.error("Error getting appointments", error);
+    res.status(500).send("Error while getting appointments");
+  }
+}
+);

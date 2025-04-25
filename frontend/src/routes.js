@@ -47,7 +47,9 @@ import SignUp from "layouts/authentication/sign-up";
 import HospitalSignIn from "layouts/authentication/hospital_signin";
 import HospitalSignUp from "layouts/authentication/hospital_signup";
 
+
 // Add these imports at the top
+import Appointments from "layouts/appointment";
 import Prescriptions from "layouts/prescriptions";
 import Treatment from "layouts/treatment";
 import LabReports from "layouts/lab-reports";
@@ -175,6 +177,15 @@ const routes = [
     route: "/authentication/sign-up",
     component: <SignUp />,
   },
+
+  {
+    type: "collapse",
+    name: "Appointments",
+    key: "appointments",
+    icon: <Icon fontSize="small">event</Icon>,
+    route: "/appointments",
+    component: <Appointments />,
+  },
   {
     type: "divider",
     key: "divider-1",
@@ -217,7 +228,9 @@ const routes = [
     component: <HospitalDashboard />,
     layout:"dashboard"
     
-  }
+  },
+
+  
 
 ];
 
