@@ -764,7 +764,7 @@ app.get("/hospital/isLoggedIn", async (req, res) => {
 if (req.session.hosp_id) {
   res
     .status(200)
-    .json({ message: "Logged in", hosp_id: req.session.hosp_id});
+    .json({ hosp_id:req.session.hosp_id,message: "Logged in", hosp_id: req.session.hosp_id});
 } else {
   return res.status(401).json({ message: "Not logged in" });
 }
