@@ -105,7 +105,7 @@ export default function App() {
       setLayout(dispatch, "hospitalauth");
     } 
     else if(
-      pathname === "/hospitaldashboard"
+      pathname === "/hospitaldashboard" || pathname === "/empty_slots" || pathname === "/patients" || pathname === "/doctors" || pathname === "/ambulance" || pathname === "/bloodbank"
     ) setLayout(dispatch, "hosp_dash");
     else {
       setLayout(dispatch, "dashboard");
@@ -201,7 +201,7 @@ export default function App() {
 
       <Routes>
         {getRoutes(layout === "hosp_dash" ? hospital_routes : routes)}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* <Route path="*" element={<Navigate to="/" />} /> */}
       </Routes>
 
     </ThemeProvider>
