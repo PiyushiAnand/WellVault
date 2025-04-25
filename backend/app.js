@@ -15,7 +15,7 @@ const pool = new Pool({
   user: "postgres",
   host: "localhost",
   database: "project",
-  password: "Aak#0907",
+  password: "postgres",
   port: 5432,
 });
 
@@ -72,6 +72,15 @@ function isAuthenticated(req, res, next) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 }
+
+function ishospAuthenticated(req, res, next) {
+  if (req.session.hosp_id) {
+    return next();
+  } else {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+}
+
 
 app.post("/signup", async (req, res) => {
     const { username, password, name, dob, mobile_number, gender, address, emergency_contact } = req.body;
@@ -769,3 +778,33 @@ req.session.destroy((err) => {
 });
 });
 
+
+
+app.post("/doctorwise-slots", ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+    const date = req.query.date;
+
+    let query = `SELECT ds.doc_id, doctors.doc_name, ds.slot_id, ds.date, ds.booked, s.timings
+                 FROM Doctor_slots ds 
+                 NATURAL JOIN Doctors join slots s on s.slot_id = ds.slot_id
+                 WHERE hosp_id = $1`;
+    const params = [hosp_id];
+    console.log()
+    if (date) {
+      query += ` AND ds.date = $2`;
+      params.push(date);
+    }
+
+    const result = await pool.query(query, params);
+    console.log(result.rows);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No slots found" });
+    }
+
+    res.status(200).json({ hospital: result.rows });
+  } catch (error) {
+    console.error("Error getting doctor-wise slots", error);
+    res.status(500).send("Error while getting doctor-wise slots");
+  }
+});
