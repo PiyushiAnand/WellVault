@@ -12,7 +12,7 @@
 -- ('jack', 'MediCare Plus', 'POL40404');
 
 -- DELETE from doctors;
--- DELETE from doctor_slots;
+DELETE from doctor_slots;
 -- DELETE from slots;
 
 
@@ -25,14 +25,22 @@
 
 
 INSERT INTO Doctor_slots (doc_id, slot_id, date, booked) VALUES
+
+(5, 1, '2025-04-24', FALSE),
+(6, 2, '2025-04-24', FALSE),
+(7, 3, '2025-04-24', FALSE),
+(8, 4, '2025-04-24', FALSE),
+(8, 3, '2025-04-24', FALSE),
 -- Dr. Aditi Sharma on 25th April
 (5, 1, '2025-04-25', FALSE),
-(6, 2, '2025-04-25', TRUE),
+(6, 2, '2025-04-25', FALSE),
+(7, 3, '2025-04-25', FALSE),
+(8, 4, '2025-04-25', FALSE),
 (8, 3, '2025-04-25', FALSE),
 
 -- Dr. Aditi Sharma on 25th April
 (7, 1, '2025-04-26', FALSE),
-(8, 2, '2025-04-26', TRUE),
+(8, 2, '2025-04-26', FALSE),
 (6, 3, '2025-04-26', FALSE);
 
 
@@ -49,14 +57,23 @@ INSERT INTO Doctor_slots (doc_id, slot_id, date, booked) VALUES
 -- ('POL30303', 'WellnessShield', 'Extended OPD, mental wellness, and diet consultation', '2023-04-01', '2026-04-01', 350000.00),
 -- ('POL40404', 'MediCare Plus', 'Travel insurance + regular coverage', '2023-09-01', '2026-09-01', 250000.00);
 
-INSERT INTO Slots (slot_id,timings) VALUES
-('1','8:30 AM'),
-('2','9:30 AM'),
-('3','10:30 AM'),
-('4','11:30 AM'),
-('5','12:30 PM'),
-('6','5:30 PM'),
-('7','6:30 PM'),
-('8','7:30 PM'),
-('9','8:30 PM'),
-('10','9:30 PM');
+-- INSERT INTO Slots (slot_id,timings) VALUES
+-- ('1','8:30 AM'),
+-- ('2','9:30 AM'),
+-- ('3','10:30 AM'),
+-- ('4','11:30 AM'),
+-- ('5','12:30 PM'),
+-- ('6','5:30 PM'),
+-- ('7','6:30 PM'),
+-- ('8','7:30 PM'),
+-- ('9','8:30 PM'),
+-- ('10','9:30 PM');
+-- Insert dummy hospitals
+-- INSERT INTO Hospitals (hospital_name, pincode, address, type, ambulance_availability, blood_bank_availability)
+-- VALUES 
+-- ('City Care Hospital', '226001', '123 MG Road, Lucknow', 'Private', true, true),
+-- ('Metro Health Center', '226010', '45 Hazratganj, Lucknow', 'Private', false, false),
+-- ('General Government Hospital', '226003', 'Near Charbagh Station, Lucknow', 'Public', true, true),
+-- ('Green Life Clinic', '226012', 'Park Road, Aliganj, Lucknow', 'Public', false, false),
+-- ('Sunrise Multi-speciality', '226016', 'Ring Road, Gomti Nagar, Lucknow', 'Private', true, false),
+-- ('Red Cross Medical Center', '226007', 'Aminabad Main Market, Lucknow', 'Public', false, true);
