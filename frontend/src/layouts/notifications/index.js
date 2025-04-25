@@ -46,12 +46,24 @@ function Notifications() {
           credentials: "include",
         });
         const data = await response.json();
-
-        // Filter the appointments to show only future appointments
+       
         const futureAppointments = data.data.filter((appointment) => {
-          const appointmentDate = new Date(appointment.appointment_date);
-          const currentDate = new Date();
-          return appointmentDate > currentDate;
+          const appointmentDate = new Date(appointment.appointment_date).toISOString().split("T")[0];
+
+          const currentDate = new Date().toISOString().split("T")[0];
+          // const currtime = new Date().toLocaleTimeString("en-US", {
+          //   hour: "2-digit",
+          //   minute: "2-digit",
+          //   hour12: false,
+          // });
+          // const apptime = appointment.timings;
+          // console.log(apptime);
+          // console.log(currtime);
+          // console.log(currentDate);
+          // console.log(appointmentDate);
+          // const currentDateString = currentDate.toISOString().split("T")[0];
+
+          return appointmentDate >= currentDate;
         });
 
         // If there are upcoming appointments, display the first one
@@ -101,7 +113,7 @@ function Notifications() {
                     <MDAlert key={index} color="warning" dismissible>
                       You have an upcoming appointment with{" "}
                       {appointment.doctor_name} at{" "}
-                      {appointment.hospital_name} on{" "}
+                      {appointment.timings} on{" "}
                       {new Date(appointment.appointment_date).toLocaleDateString()}
                     </MDAlert>
                   ))
