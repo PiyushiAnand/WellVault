@@ -1,26 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
-  Card,
-  Grid,
-  TextField,
-  Button,
-  Snackbar,
-  Alert,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  Divider,
-  Chip,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel
+  Card, Grid, TextField, Button, Snackbar, Alert, Typography,
+  Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Divider,
+  MenuItem, Select, FormControl, InputLabel
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MDBox from "components/MDBox";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -30,49 +14,16 @@ import { apiUrl } from "../../config/config";
 function VerifyInsurance() {
   const [policies, setPolicies] = useState([]);
   const [availablePlans, setAvailablePlans] = useState([]);
-  const [searchForm, setSearchForm] = useState({
-    policy_number: "",
-    provider_name: "",
-  });
-  const [editPolicy, setEditPolicy] = useState(null);
+  const [search, setSearch] = useState({ policy_number: "", provider_name: "" });
   const [newPolicy, setNewPolicy] = useState({
-    policy_number: "",
-    provider_name: "",
-    coverage_details: "",
-    valid_until: "",
-    is_external: false,
+    policy_number: "", provider_name: "", coverage_details: "",
+    valid_from: "", valid_until: "", amount: ""
   });
   const [openDialog, setOpenDialog] = useState(false);
   const [availDialog, setAvailDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("");
+  const [amount, setAmount] = useState("");
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
-
-  useEffect(() => {
-    fetchPolicies();
-    fetchAvailablePlans();
-  }, []);
-
-  const fetchPolicies = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/my-policies`, {
-        credentials: "include"
-      });
-      const data = await response.json();
-      if (response.ok) setPolicies(data);
-    } catch (error) {
-      showSnackbar("Error loading policies", "error");
-    }
-  };
-
-  const fetchAvailablePlans = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/available-policies`);
-      const data = await response.json();
-      if (response.ok) setAvailablePlans(data);
-    } catch (error) {
-      showSnackbar("Error loading plans", "error");
-    }
-  };
 
   const showSnackbar = (message, severity = "info") => {
     setSnackbar({ open: true, message, severity });
@@ -82,140 +33,149 @@ function VerifyInsurance() {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
-  const handleSearchChange = (e) => {
-    setSearchForm({ ...searchForm, [e.target.name]: e.target.value });
+  useEffect(() => {
+    fetchPolicies();
+    fetchAvailablePlans();
+  }, []);
+
+  const fetchPolicies = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/insurance`, { credentials: "include" });
+      const data = await res.json();
+      setPolicies(data.policies || []);
+    } catch (err) {
+      showSnackbar("Error loading policies", "error");
+    }
   };
 
-  const handlePolicyChange = (e) => {
-    const { name, value } = e.target;
-    setNewPolicy(prev => ({
-      ...prev,
-      [name]: name === 'valid_until' ? value.split('T')[0] : value
-    }));
+  const fetchAvailablePlans = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/insurance/available-policies`);
+      const data = await res.json();
+      setAvailablePlans(data.policies || []);
+    } catch (err) {
+      showSnackbar("Error loading plans", "error");
+    }
   };
 
   const handleVerify = async () => {
     try {
-      const response = await fetch(`${apiUrl}/verify-policy`, {
+      if (!search.policy_number || !search.provider_name) {
+        showSnackbar("Please fill both fields", "warning");
+        return;
+      }
+
+      const verifyRes = await fetch(`${apiUrl}/insurance/verify-policy`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(searchForm),
+        body: JSON.stringify(search),
         credentials: "include",
       });
 
-      const result = await response.json();
-      if (response.ok) {
-        await fetchPolicies();
-        showSnackbar("Policy verified and added!", "success");
-      } else {
-        showSnackbar(result.message || "Verification failed", "error");
+      const verifyData = await verifyRes.json();
+      
+      if (!verifyRes.ok) {
+        showSnackbar(verifyData.message || "Policy not found", "error");
+        return;
       }
-    } catch (error) {
-      showSnackbar("Server error occurred", "error");
+
+      const addRes = await fetch(`${apiUrl}/insurance/add-policy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...verifyData,
+          username: verifyData.username
+        }),
+        credentials: "include",
+      });
+
+      const addData = await addRes.json();
+      
+      if (!addRes.ok) {
+        showSnackbar(addData.message || "Failed to add policy", "error");
+        return;
+      }
+
+      await fetchPolicies();
+      showSnackbar("Policy added successfully!", "success");
+    } catch (err) {
+      showSnackbar("Network error", "error");
     }
   };
 
-  // Add External Policy Handlers
-  const handleAddPolicy = () => {
-    setOpenDialog(true);
-    setNewPolicy({
-      policy_number: "",
-      provider_name: "",
-      coverage_details: "",
-      valid_until: "",
-      is_external: true,
-    });
-  };
-
-  const handleSavePolicy = async () => {
-    if (!newPolicy.policy_number || !newPolicy.provider_name) {
-      showSnackbar("Policy number and provider name are required", "warning");
-      return;
-    }
-
+  const handleAddPolicy = async () => {
     try {
-      const response = await fetch(`${apiUrl}/add-policy`, {
+      const requiredFields = ['policy_number', 'provider_name', 'valid_from', 'valid_until'];
+      const missing = requiredFields.filter(field => !newPolicy[field]);
+      
+      if (missing.length > 0) {
+        showSnackbar(`Missing: ${missing.join(', ')}`, "warning");
+        return;
+      }
+
+      if (new Date(newPolicy.valid_until) < new Date(newPolicy.valid_from)) {
+        showSnackbar("End date must be after start date", "warning");
+        return;
+      }
+
+      const res = await fetch(`${apiUrl}/insurance/add-policy`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newPolicy),
         credentials: "include",
       });
 
-      if (response.ok) {
-        await fetchPolicies();
-        setOpenDialog(false);
-        showSnackbar("Policy added successfully", "success");
-      }
-    } catch (error) {
-      showSnackbar("Error saving policy", "error");
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.message || "Save failed");
+
+      setOpenDialog(false);
+      await fetchPolicies();
+      showSnackbar("Policy saved", "success");
+    } catch (err) {
+      showSnackbar(err.message, "error");
     }
   };
 
-  // Edit Policy Handlers
-  const handleEdit = (index) => {
-    setEditPolicy(index);
-    setNewPolicy(policies[index]);
-    setOpenDialog(true);
-  };
-
-  const handleUpdatePolicy = async () => {
-    if (!newPolicy.policy_number || !newPolicy.provider_name) {
-      showSnackbar("Policy number and provider name are required", "warning");
-      return;
-    }
-
+  const handleDelete = async (policy) => {
     try {
-      const response = await fetch(`${apiUrl}/update-policy/${policies[editPolicy].id}`, {
-        method: "PUT",
+      const res = await fetch(`${apiUrl}/insurance/delete-policy`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newPolicy),
+        body: JSON.stringify(policy),
         credentials: "include",
       });
-
-      if (response.ok) {
-        await fetchPolicies();
-        setOpenDialog(false);
-        showSnackbar("Policy updated successfully", "success");
-      }
-    } catch (error) {
-      showSnackbar("Error updating policy", "error");
+      
+      if (!res.ok) throw new Error("Delete failed");
+      
+      await fetchPolicies();
+      showSnackbar("Policy deleted", "success");
+    } catch (err) {
+      showSnackbar(err.message, "error");
     }
   };
 
-  // Delete Policy Handler
-  const handleDelete = async (index) => {
-    try {
-      const response = await fetch(`${apiUrl}/delete-policy/${policies[index].id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        await fetchPolicies();
-        showSnackbar("Policy removed successfully", "success");
-      }
-    } catch (error) {
-      showSnackbar("Error deleting policy", "error");
-    }
-  };
-
-  // Avail Plan Handlers
   const handleAvailPlan = async () => {
     try {
-      const response = await fetch(`${apiUrl}/avail-plan`, {
+      if (!selectedPlan || !amount) {
+        showSnackbar("Please select plan and enter amount", "warning");
+        return;
+      }
+
+      const res = await fetch(`${apiUrl}/insurance/avail-plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan_id: selectedPlan }),
+        body: JSON.stringify({ policy_name: selectedPlan, amount }),
         credentials: "include",
       });
-
-      if (response.ok) {
-        await fetchPolicies();
-        setAvailDialog(false);
-        showSnackbar("Plan availed successfully", "success");
-      }
-    } catch (error) {
-      showSnackbar("Error availing plan", "error");
+      
+      if (!res.ok) throw new Error("Failed to avail plan");
+      
+      setAvailDialog(false);
+      await fetchPolicies();
+      showSnackbar("Plan activated!", "success");
+    } catch (err) {
+      showSnackbar(err.message, "error");
     }
   };
 
@@ -223,7 +183,6 @@ function VerifyInsurance() {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox py={3}>
-        {/* Search Section */}
         <Card sx={{ p: 3, mb: 4 }}>
           <Typography variant="h5" gutterBottom>
             🔍 Search Insurance Policy
@@ -234,8 +193,8 @@ function VerifyInsurance() {
                 label="Policy Number"
                 name="policy_number"
                 fullWidth
-                value={searchForm.policy_number}
-                onChange={handleSearchChange}
+                value={search.policy_number}
+                onChange={(e) => setSearch({...search, policy_number: e.target.value})}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -243,13 +202,13 @@ function VerifyInsurance() {
                 label="Provider Name"
                 name="provider_name"
                 fullWidth
-                value={searchForm.provider_name}
-                onChange={handleSearchChange}
+                value={search.provider_name}
+                onChange={(e) => setSearch({...search, provider_name: e.target.value})}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <Button variant="contained" color="primary" fullWidth onClick={handleVerify}>
-                Verify Policy
+                Verify & Add Policy
               </Button>
             </Grid>
           </Grid>
@@ -257,7 +216,7 @@ function VerifyInsurance() {
           <Divider sx={{ my: 3 }} />
 
           <MDBox textAlign="center" display="flex" justifyContent="center" gap={2}>
-            <Button variant="outlined" onClick={handleAddPolicy} startIcon={<AddIcon />}>
+            <Button variant="outlined" onClick={() => setOpenDialog(true)} startIcon={<AddIcon />}>
               Add External Policy
             </Button>
             <Button variant="contained" color="secondary" onClick={() => setAvailDialog(true)}>
@@ -266,41 +225,30 @@ function VerifyInsurance() {
           </MDBox>
         </Card>
 
-        {/* Policies Grid */}
         <Grid container spacing={3}>
-          {policies.map((policy, index) => (
-            <Grid item xs={12} sm={6} md={4} key={policy.id}>
+          {policies.map((policy) => (
+            <Grid item xs={12} sm={6} md={4} key={policy.policy_number}>
               <Card sx={{ p: 2, height: "100%" }}>
                 <MDBox display="flex" justifyContent="space-between">
                   <Typography variant="h6">{policy.provider_name}</Typography>
-                  <MDBox>
-                    <IconButton onClick={() => handleEdit(index)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(index)}>
-                      <DeleteIcon color="error" />
-                    </IconButton>
-                  </MDBox>
+                  <IconButton onClick={() => handleDelete(policy)}>
+                    <DeleteIcon color="error" />
+                  </IconButton>
                 </MDBox>
-
                 <MDBox mt={2}>
                   <Typography>Policy #: {policy.policy_number}</Typography>
-                  <Typography>Valid Until: {policy.valid_until}</Typography>
+                  <Typography>Amount: ₹{policy.amount}</Typography>
+                  <Typography>Start: {new Date(policy.valid_from).toLocaleDateString()}</Typography>
+                  <Typography>End: {new Date(policy.valid_until).toLocaleDateString()}</Typography>
                   <Typography>Coverage: {policy.coverage_details}</Typography>
-                  {policy.is_external && (
-                    <Chip label="External" color="warning" size="small" sx={{ mt: 1 }} />
-                  )}
                 </MDBox>
               </Card>
             </Grid>
           ))}
         </Grid>
 
-        {/* Add/Edit Policy Dialog */}
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            {editPolicy !== null ? "Edit Insurance Policy" : "Add New Insurance Policy"}
-          </DialogTitle>
+          <DialogTitle>Add External Policy</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
@@ -309,7 +257,7 @@ function VerifyInsurance() {
                   name="policy_number"
                   fullWidth
                   value={newPolicy.policy_number}
-                  onChange={handlePolicyChange}
+                  onChange={(e) => setNewPolicy({...newPolicy, policy_number: e.target.value})}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -318,80 +266,99 @@ function VerifyInsurance() {
                   name="provider_name"
                   fullWidth
                   value={newPolicy.provider_name}
-                  onChange={handlePolicyChange}
+                  onChange={(e) => setNewPolicy({...newPolicy, provider_name: e.target.value})}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Start Date *"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  fullWidth
+                  value={newPolicy.valid_from}
+                  onChange={(e) => setNewPolicy({...newPolicy, valid_from: e.target.value})}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="End Date *"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  fullWidth
+                  value={newPolicy.valid_until}
+                  onChange={(e) => setNewPolicy({...newPolicy, valid_until: e.target.value})}
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   label="Coverage Details"
-                  name="coverage_details"
-                  fullWidth
                   multiline
                   rows={3}
+                  fullWidth
                   value={newPolicy.coverage_details}
-                  onChange={handlePolicyChange}
+                  onChange={(e) => setNewPolicy({...newPolicy, coverage_details: e.target.value})}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
-                  label="Valid Until"
-                  name="valid_until"
-                  type="date"
+                  label="Amount"
+                  type="number"
                   fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  value={newPolicy.valid_until}
-                  onChange={handlePolicyChange}
+                  value={newPolicy.amount}
+                  onChange={(e) => setNewPolicy({...newPolicy, amount: e.target.value})}
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-            <Button
-              variant="contained"
-              onClick={editPolicy !== null ? handleUpdatePolicy : handleSavePolicy}
-            >
-              {editPolicy !== null ? "Update" : "Save"}
+            <Button variant="contained" onClick={handleAddPolicy}>
+              Save Policy
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Avail Plan Dialog */}
         <Dialog open={availDialog} onClose={() => setAvailDialog(false)}>
-          <DialogTitle>Select Insurance Plan</DialogTitle>
+          <DialogTitle>Avail Insurance Plan</DialogTitle>
           <DialogContent>
-            <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel>Available Plans</InputLabel>
+            <FormControl fullWidth sx={{ mt: 2, gap: 2 }}>
               <Select
                 value={selectedPlan}
-                label="Available Plans"
                 onChange={(e) => setSelectedPlan(e.target.value)}
+                displayEmpty
               >
+                <MenuItem value="" disabled>Select a plan</MenuItem>
                 {availablePlans.map((plan) => (
-                  <MenuItem key={plan.id} value={plan.id}>
-                    {plan.provider_name} - {plan.coverage_details} (${plan.claim_limit})
+                  <MenuItem key={plan.policy_name} value={plan.policy_name}>
+                    {plan.policy_name} ({plan.provider_name})
                   </MenuItem>
                 ))}
               </Select>
+              <TextField
+                label="Amount"
+                type="number"
+                fullWidth
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
             </FormControl>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setAvailDialog(false)}>Cancel</Button>
             <Button variant="contained" onClick={handleAvailPlan}>
-              Avail Plan
+              Confirm Plan
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Snackbar */}
         <Snackbar
           open={snackbar.open}
-          autoHideDuration={3000}
+          autoHideDuration={6000}
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          <Alert
-            severity={snackbar.severity}
+          <Alert 
+            severity={snackbar.severity} 
             onClose={handleCloseSnackbar}
             sx={{ width: '100%' }}
           >

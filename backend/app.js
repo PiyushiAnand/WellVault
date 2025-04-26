@@ -12,10 +12,10 @@ const mime = require("mime-types");
 // PostgreSQL connection
 // NOTE: use YOUR postgres username and password here
 const pool = new Pool({
-  user: "test",
+  user: "whoknows",
   host: "localhost",
   database: "project",
-  password: "test",
+  password: "whoknows",
   port: 5432,
 });
 
@@ -733,22 +733,47 @@ app.post('/insurance/verify-policy', async (req, res) => {
   }
 });
 
-app.post('/insurance/add-policy', isAuthenticated, async (req, res) => {
-  const username = req.session.username;
-  const { policy_number, provider_name,details,start_date, end_date, amount} = req.body;
+// app.post('/insurance/add-policy', isAuthenticated, async (req, res) => {
+//   const username = req.session.username;
+//   const { policy_number, provider_name,details, valid_from, valid_until, amount} = req.body;
 
-  const query = `INSERT INTO InsurerData
-  (username, policy_number, provider_name, coverage_details, start_date, end_date, amount) 
-  VALUES ($1, $2, $3, $4, $5, $6, $7);`;
-  const query2 = `INSERT INTO Insurance
-  (username,provider_name, policy_number) VALUES ($1, $2, $3);`
+//   const query = `INSERT INTO InsurerData
+//   (username, policy_number, provider_name, coverage_details, valid_from, valid_until, amount) 
+//   VALUES ($1, $2, $3, $4, $5, $6, $7);`;
+//   const query2 = `INSERT INTO Insurance
+//   (username,provider_name, policy_number) VALUES ($1, $2, $3);`
+//   try {
+//     await pool.query(query, [username, policy_number, provider_name, details,valid_from, valid_until, amount]);
+//     await pool.query(query2, [username, provider_name, policy_number]);
+//     res.status(200).json({ message: "Policy added successfully" });
+//   } catch (error) {
+//     console.error("Error adding policy", error);
+//     res.status(500).send("Error while adding policy");
+//   }
+// });
+
+app.post("/insurance/add-policy", isAuthenticated, async (req, res) => {
+  const { policy_number, provider_name, coverage_details, start_date, end_date, amount } = req.body;
+  
   try {
-    await pool.query(query, [username, policy_number, provider_name, details,start_date, end_date, amount]);
-    await pool.query(query2, [username, provider_name, policy_number]);
-    res.status(200).json({ message: "Policy added successfully" });
-  } catch (error) {
-    console.error("Error adding policy", error);
-    res.status(500).send("Error while adding policy");
+    // 1. Insert into InsurerData (NO username here)
+    await pool.query(
+      `INSERT INTO InsurerData 
+      (policy_number, provider_name, coverage_details, valid_from, valid_until, claim_limit)
+      VALUES ($1, $2, $3, $4, $5, $6)`,
+      [policy_number, provider_name, coverage_details, start_date, end_date, amount]
+    );
+
+    // 2. Link to user in Insurance table
+    await pool.query(
+      `INSERT INTO Insurance (username, provider_name, policy_number)
+      VALUES ($1, $2, $3)`,
+      [req.session.username, provider_name, policy_number]
+    );
+
+    res.json({ message: "Policy added successfully" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 });
 
