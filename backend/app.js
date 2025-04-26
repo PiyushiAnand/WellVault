@@ -802,39 +802,78 @@ app.post('/insurance/update-policy', isAuthenticated, async (req, res) => {
 
 });
 
+// app.post('/insurance/avail-plan', isAuthenticated, async (req, res) => {
+//   const username = req.session.username;
+//   const { policy_name, amount } = req.body;
+//   try {
+//     const policyResult = await pool.query(`
+//       SELECT provider_name, coverage_details, duration
+//       FROM AvailablePolicies 
+//       WHERE policy_name = $1
+//     `, [policy_name]);
+
+//   if (policyResult.rows.length === 0) {
+//     return res.status(404).json({ message: "Policy not found" });
+//   }
+//   const policy_number= await generatePolicyNumber();
+//   const { provider_name, coverage_details, duration } = policyResult.rows[0];
+//   const start_date = new Date();
+//   const end_date = new Date(start_date);
+//   end_date.setMonth(end_date.getMonth() + duration);
+//   await pool.query(`
+//     INSERT INTO InsurerData (policy_number, provider_name, coverage_details, start_date, end_date, amount)
+//     VALUES ($1, $2, $3, $4, $5, $6)
+//   `, [policy_number, provider_name, coverage_details, start_date, end_date, amount]);
+
+//   await pool.query(`
+//     INSERT INTO Insurance (username, provider_name, policy_number)
+//     VALUES ($1, $2, $3)
+//   `, [username, provider_name, policy_number]);
+
+// } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ message: "error adding plan" });
+// }
+
+// });
+
 app.post('/insurance/avail-plan', isAuthenticated, async (req, res) => {
-  const username = req.session.username;
-  const { policy_name, amount } = req.body;
   try {
-    const policyResult = await pool.query(`
-      SELECT provider_name, coverage_details, duration
-      FROM AvailablePolicies 
-      WHERE policy_name = $1
-    `, [policy_name]);
+    const { policy_name, amount } = req.body;
+    const policyResult = await pool.query(
+      `SELECT * FROM AvailablePolicies WHERE policy_name = $1`,
+      [policy_name]
+    );
 
-  if (policyResult.rows.length === 0) {
-    return res.status(404).json({ message: "Policy not found" });
-  }
-  const policy_number= await generatePolicyNumber();
-  const { provider_name, coverage_details, duration } = policyResult.rows[0];
-  const start_date = new Date();
-  const end_date = new Date(start_date);
-  end_date.setMonth(end_date.getMonth() + duration);
-  await pool.query(`
-    INSERT INTO InsurerData (policy_number, provider_name, coverage_details, start_date, end_date, amount)
-    VALUES ($1, $2, $3, $4, $5, $6)
-  `, [policy_number, provider_name, coverage_details, start_date, end_date, amount]);
+    if (!policyResult.rows.length) {
+      return res.status(404).json({ message: "Policy not found" });
+    }
 
-  await pool.query(`
-    INSERT INTO Insurance (username, provider_name, policy_number)
-    VALUES ($1, $2, $3)
-  `, [username, provider_name, policy_number]);
+    const { provider_name, coverage_details, duration } = policyResult.rows[0];
+    const policy_number = await generatePolicyNumber();
+    const valid_from = new Date();
+    const valid_until = new Date(valid_from);
+    valid_until.setMonth(valid_until.getMonth() + duration);
 
-} catch (err) {
+    // Fixed insert with correct column names
+    await pool.query(
+      `INSERT INTO InsurerData 
+      (policy_number, provider_name, coverage_details, valid_from, valid_until, claim_limit)
+      VALUES ($1, $2, $3, $4, $5, $6)`,
+      [policy_number, provider_name, coverage_details, valid_from, valid_until, amount]
+    );
+
+    await pool.query(
+      `INSERT INTO Insurance (username, provider_name, policy_number)
+      VALUES ($1, $2, $3)`,
+      [req.session.username, provider_name, policy_number]
+    );
+
+    res.json({ message: "Plan availed successfully" });
+  } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "error adding plan" });
-}
-
+    res.status(500).json({ message: "Error availing plan" });
+  }
 });
 
 app.get('/insurance/available-policies', isAuthenticated, async (req, res) => {
