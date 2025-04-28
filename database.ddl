@@ -128,13 +128,13 @@ CREATE TABLE InsurerData (
     policy_number VARCHAR(50) PRIMARY KEY,
     provider_name VARCHAR(100) NOT NULL,
     coverage_details TEXT NOT NULL,
-    valid_from DATE NOT NULL,
-    valid_until DATE NOT NULL,
+    valid_from DATE,
+    valid_until DATE,
     claim_limit DECIMAL(10,2) NOT NULL
 );
 
 CREATE TABLE AvailablePolicies (
-    policy_name VARCHAR(100) PRIMARY KEY;
+    policy_name VARCHAR(100) PRIMARY KEY,
     provider_name VARCHAR(100) NOT NULL,
     coverage_details TEXT NOT NULL,
     duration INTEGER NOT NULL,
