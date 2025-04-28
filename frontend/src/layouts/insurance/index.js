@@ -273,6 +273,7 @@ function VerifyInsurance() {
                 <TextField
                   label="Start Date *"
                   type="date"
+                  name="date"
                   InputLabelProps={{ shrink: true }}
                   fullWidth
                   value={newPolicy.valid_from}
@@ -283,6 +284,7 @@ function VerifyInsurance() {
                 <TextField
                   label="End Date *"
                   type="date"
+                  name ="date"
                   InputLabelProps={{ shrink: true }}
                   fullWidth
                   value={newPolicy.valid_until}
