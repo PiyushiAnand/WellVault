@@ -12,10 +12,10 @@ const mime = require("mime-types");
 // PostgreSQL connection
 // NOTE: use YOUR postgres username and password here
 const pool = new Pool({
-  user: "whoknows",
+  user: "postgres",
   host: "localhost",
   database: "project",
-  password: "whoknows",
+  password: "Aak#0907",
   port: 5432,
 });
 
