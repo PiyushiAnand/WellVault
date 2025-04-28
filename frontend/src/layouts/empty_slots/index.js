@@ -57,9 +57,8 @@ function Empty_Slots() {
     if(rows.status === 401) {
         navigate("/");
         return;
-    }
-    const result = rows.hospital;
-    
+    } 
+    const result = Array.isArray(rows.hospital) ? rows.hospital : [];
     // Filter only selected date's slots
     const filtered = result.filter((row) => row.date === selectedDate);
 
