@@ -12,28 +12,28 @@
 -- ('jack', 'MediCare Plus', 'POL40404');
 
 -- DELETE from doctors;
-DELETE from doctor_slots;
+-- DELETE from doctor_slots;
 DELETE from AvailablePolicies;
 
 
-INSERT INTO Doctor_slots (doc_id, slot_id, date, booked) VALUES
+-- INSERT INTO Doctor_slots (doc_id, slot_id, date, booked) VALUES
 
-(5, 1, '2025-04-24', FALSE),
-(6, 2, '2025-04-24', FALSE),
-(7, 3, '2025-04-24', FALSE),
-(8, 4, '2025-04-24', FALSE),
-(8, 3, '2025-04-24', FALSE),
--- Dr. Aditi Sharma on 25th April
-(5, 1, '2025-04-25', FALSE),
-(6, 2, '2025-04-25', FALSE),
-(7, 3, '2025-04-25', FALSE),
-(8, 4, '2025-04-25', FALSE),
-(8, 3, '2025-04-25', FALSE),
+-- (5, 1, '2025-04-24', FALSE),
+-- (6, 2, '2025-04-24', FALSE),
+-- (7, 3, '2025-04-24', FALSE),
+-- (8, 4, '2025-04-24', FALSE),
+-- (8, 3, '2025-04-24', FALSE),
+-- -- Dr. Aditi Sharma on 25th April
+-- (5, 1, '2025-04-25', FALSE),
+-- (6, 2, '2025-04-25', FALSE),
+-- (7, 3, '2025-04-25', FALSE),
+-- (8, 4, '2025-04-25', FALSE),
+-- (8, 3, '2025-04-25', FALSE),
 
--- Dr. Aditi Sharma on 25th April
-(7, 1, '2025-04-26', FALSE),
-(8, 2, '2025-04-26', FALSE),
-(6, 3, '2025-04-26', FALSE);
+-- -- Dr. Aditi Sharma on 25th April
+-- (7, 1, '2025-04-26', FALSE),
+-- (8, 2, '2025-04-26', FALSE),
+-- (6, 3, '2025-04-26', FALSE);
 
 
 INSERT INTO AvailablePolicies (policy_name, provider_name, coverage_details, duration, claim_limit) VALUES
