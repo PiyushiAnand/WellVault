@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
-  Card, Grid, TextField, Button, Snackbar, Alert, Typography,
+  Box, Card, Grid, TextField, Button, Snackbar, Alert, Typography,
   Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Divider,
-  MenuItem, Select, FormControl, InputLabel
+  MenuItem, Select, FormControl, InputLabel, CircularProgress
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -24,7 +24,7 @@ function VerifyInsurance() {
   const [selectedPlan, setSelectedPlan] = useState("");
   const [amount, setAmount] = useState("");
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
-
+  const [verifiedPolicy, setVerifiedPolicy] = useState(null);
   const showSnackbar = (message, severity = "info") => {
     setSnackbar({ open: true, message, severity });
   };
@@ -41,21 +41,28 @@ function VerifyInsurance() {
   const fetchPolicies = async () => {
     try {
       const res = await fetch(`${apiUrl}/insurance`, { credentials: "include" });
-      const data = await res.json();
-      setPolicies(data.policies || []);
+      const record = await res.json();
+      setPolicies(record.record || []);
     } catch (err) {
       showSnackbar("Error loading policies", "error");
     }
   };
-
   const fetchAvailablePlans = async () => {
+  
     try {
       const res = await fetch(`${apiUrl}/insurance/available-policies`);
       const data = await res.json();
-      setAvailablePlans(data.policies || []);
+      if (!Array.isArray(data.policies)) {
+        throw new Error("Invalid response structure");
+      }
+      setAvailablePlans(data.policies);
+      console.log(data.policies);
     } catch (err) {
+      console.error(err);
       showSnackbar("Error loading plans", "error");
+      setAvailablePlans([]);
     }
+   
   };
 
   const handleVerify = async () => {
@@ -73,31 +80,12 @@ function VerifyInsurance() {
       });
 
       const verifyData = await verifyRes.json();
-      
+
       if (!verifyRes.ok) {
         showSnackbar(verifyData.message || "Policy not found", "error");
         return;
       }
-
-      const addRes = await fetch(`${apiUrl}/insurance/add-policy`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...verifyData,
-          username: verifyData.username
-        }),
-        credentials: "include",
-      });
-
-      const addData = await addRes.json();
-      
-      if (!addRes.ok) {
-        showSnackbar(addData.message || "Failed to add policy", "error");
-        return;
-      }
-
-      await fetchPolicies();
-      showSnackbar("Policy added successfully!", "success");
+     setVerifiedPolicy(verifyData);
     } catch (err) {
       showSnackbar("Network error", "error");
     }
@@ -107,7 +95,7 @@ function VerifyInsurance() {
     try {
       const requiredFields = ['policy_number', 'provider_name', 'valid_from', 'valid_until'];
       const missing = requiredFields.filter(field => !newPolicy[field]);
-      
+
       if (missing.length > 0) {
         showSnackbar(`Missing: ${missing.join(', ')}`, "warning");
         return;
@@ -126,7 +114,7 @@ function VerifyInsurance() {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.message || "Save failed");
 
       setOpenDialog(false);
@@ -145,9 +133,9 @@ function VerifyInsurance() {
         body: JSON.stringify(policy),
         credentials: "include",
       });
-      
+
       if (!res.ok) throw new Error("Delete failed");
-      
+
       await fetchPolicies();
       showSnackbar("Policy deleted", "success");
     } catch (err) {
@@ -168,9 +156,9 @@ function VerifyInsurance() {
         body: JSON.stringify({ policy_name: selectedPlan, amount }),
         credentials: "include",
       });
-      
+
       if (!res.ok) throw new Error("Failed to avail plan");
-      
+
       setAvailDialog(false);
       await fetchPolicies();
       showSnackbar("Plan activated!", "success");
@@ -194,7 +182,7 @@ function VerifyInsurance() {
                 name="policy_number"
                 fullWidth
                 value={search.policy_number}
-                onChange={(e) => setSearch({...search, policy_number: e.target.value})}
+                onChange={(e) => setSearch({ ...search, policy_number: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -203,12 +191,12 @@ function VerifyInsurance() {
                 name="provider_name"
                 fullWidth
                 value={search.provider_name}
-                onChange={(e) => setSearch({...search, provider_name: e.target.value})}
+                onChange={(e) => setSearch({ ...search, provider_name: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <Button variant="contained" color="primary" fullWidth onClick={handleVerify}>
-                Verify & Add Policy
+                Access Policy Details
               </Button>
             </Grid>
           </Grid>
@@ -219,9 +207,16 @@ function VerifyInsurance() {
             <Button variant="outlined" onClick={() => setOpenDialog(true)} startIcon={<AddIcon />}>
               Add External Policy
             </Button>
-            <Button variant="contained" color="secondary" onClick={() => setAvailDialog(true)}>
-              Avail New Plan
-            </Button>
+            <Button
+        variant="contained"
+        color="secondary"
+        onClick={() => {
+          fetchAvailablePlans();
+          setAvailDialog(true);
+        }}
+      >
+        Avail New Plan
+      </Button>
           </MDBox>
         </Card>
 
@@ -247,6 +242,7 @@ function VerifyInsurance() {
           ))}
         </Grid>
 
+        {/* Add External Policy Dialog */}
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
           <DialogTitle>Add External Policy</DialogTitle>
           <DialogContent>
@@ -254,41 +250,37 @@ function VerifyInsurance() {
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Policy Number *"
-                  name="policy_number"
                   fullWidth
                   value={newPolicy.policy_number}
-                  onChange={(e) => setNewPolicy({...newPolicy, policy_number: e.target.value})}
+                  onChange={(e) => setNewPolicy({ ...newPolicy, policy_number: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Provider Name *"
-                  name="provider_name"
                   fullWidth
                   value={newPolicy.provider_name}
-                  onChange={(e) => setNewPolicy({...newPolicy, provider_name: e.target.value})}
+                  onChange={(e) => setNewPolicy({ ...newPolicy, provider_name: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Start Date *"
                   type="date"
-                  name="date"
                   InputLabelProps={{ shrink: true }}
                   fullWidth
                   value={newPolicy.valid_from}
-                  onChange={(e) => setNewPolicy({...newPolicy, valid_from: e.target.value})}
+                  onChange={(e) => setNewPolicy({ ...newPolicy, valid_from: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="End Date *"
                   type="date"
-                  name ="date"
                   InputLabelProps={{ shrink: true }}
                   fullWidth
                   value={newPolicy.valid_until}
-                  onChange={(e) => setNewPolicy({...newPolicy, valid_until: e.target.value})}
+                  onChange={(e) => setNewPolicy({ ...newPolicy, valid_until: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -298,7 +290,7 @@ function VerifyInsurance() {
                   rows={3}
                   fullWidth
                   value={newPolicy.coverage_details}
-                  onChange={(e) => setNewPolicy({...newPolicy, coverage_details: e.target.value})}
+                  onChange={(e) => setNewPolicy({ ...newPolicy, coverage_details: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -307,63 +299,61 @@ function VerifyInsurance() {
                   type="number"
                   fullWidth
                   value={newPolicy.amount}
-                  onChange={(e) => setNewPolicy({...newPolicy, amount: e.target.value})}
+                  onChange={(e) => setNewPolicy({ ...newPolicy, amount: e.target.value })}
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-            <Button variant="contained" onClick={handleAddPolicy}>
-              Save Policy
-            </Button>
+            <Button variant="contained" onClick={handleAddPolicy}>Save Policy</Button>
           </DialogActions>
         </Dialog>
+          {verifiedPolicy && (
+          <Card sx={{ mt: 3, p: 2, backgroundColor: "#f0f0f0" }}>
+            <Typography variant="h5" gutterBottom>
+              ✅ Verified Policy Details
+            </Typography>
+            <Typography><strong>Provider:</strong> {verifiedPolicy.provider_name}</Typography>
+            <Typography><strong>Policy number:</strong> {verifiedPolicy.policy_number}</Typography>
+            <Typography><strong>Amount:</strong> ₹{verifiedPolicy.amount}</Typography>
+            <Typography><strong>Coverage:</strong> {verifiedPolicy.coverage_details}</Typography>
+            <Typography><strong>Valid From:</strong> {new Date(verifiedPolicy.valid_from).toLocaleDateString()}</Typography>
+            <Typography><strong>Valid Until:</strong> {new Date(verifiedPolicy.valid_until).toLocaleDateString()}</Typography>
+          </Card>
+        )}
+          {availDialog && (
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h5" gutterBottom>Available Insurance Plans</Typography>
+           (
+            <CircularProgress />
+          ) : availablePlans.length === 0 ? (
+            <Typography>No plans available at the moment.</Typography>
+          ) : (
+            <Grid container spacing={2}>
+              {availablePlans.map((plan, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card variant="outlined" sx={{ p: 2, height: "100%" }}>
+                    <Typography variant="h6">{plan.policy_name}</Typography>
+                    <Typography variant="subtitle1" color="text.secondary">
+                      {plan.provider_name}
+                    </Typography>
+                    <Typography><strong>Coverage:</strong> {plan.coverage_details}</Typography>
+                    <Typography><strong>Duration:</strong> {plan.duration} months</Typography>
+                    <Typography><strong>Claim Limit:</strong> ₹{plan.claim_limit}</Typography>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )
+        </Box>
+      )}
 
-        <Dialog open={availDialog} onClose={() => setAvailDialog(false)}>
-          <DialogTitle>Avail Insurance Plan</DialogTitle>
-          <DialogContent>
-            <FormControl fullWidth sx={{ mt: 2, gap: 2 }}>
-              <Select
-                value={selectedPlan}
-                onChange={(e) => setSelectedPlan(e.target.value)}
-                displayEmpty
-              >
-                <MenuItem value="" disabled>Select a plan</MenuItem>
-                {availablePlans.map((plan) => (
-                  <MenuItem key={plan.policy_name} value={plan.policy_name}>
-                    {plan.policy_name} ({plan.provider_name})
-                  </MenuItem>
-                ))}
-              </Select>
-              <TextField
-                label="Amount"
-                type="number"
-                fullWidth
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </FormControl>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setAvailDialog(false)}>Cancel</Button>
-            <Button variant="contained" onClick={handleAvailPlan}>
-              Confirm Plan
-            </Button>
-          </DialogActions>
-        </Dialog>
 
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert 
-            severity={snackbar.severity} 
-            onClose={handleCloseSnackbar}
-            sx={{ width: '100%' }}
-          >
+
+        {/* Snackbar */}
+        <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
             {snackbar.message}
           </Alert>
         </Snackbar>
