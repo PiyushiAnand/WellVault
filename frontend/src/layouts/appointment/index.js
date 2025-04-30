@@ -241,7 +241,19 @@ function Appointments() {
             variant="contained"
             color="primary"
 
-            sx={{ mt: 4 }}
+            sx={{
+                                margin: '20px',
+                                padding: '12px 24px',
+                                borderRadius: '10px',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                // boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.15)',
+                               
+                                backgroundColor: 'blue',  // Set hover background color to red
+                                color: '#fff',  // Change text color to white on hover
+                                
+                                // transition: 'all 0.3s ease', // Smooth transition for hover effects
+                            }}
           >
             Book Appointment
           </Button>

@@ -11,6 +11,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import { apiUrl } from "../../config/config";
 import { useNavigate } from "react-router-dom";
+import CloseIcon from "@mui/icons-material/Close";
 function VerifyInsurance() {
   const [policies, setPolicies] = useState([]);
   const [showpolicy, setShowPolicy] = useState(false);
@@ -169,12 +170,14 @@ setPolicies(pols);
       const res = await fetch(`${apiUrl}/insurance/delete-policy`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(policy),
+        body: JSON.stringify({policy_number: policy.policy_number,provider_name: policy.provider_name}),
         credentials: "include",
       });
       if (!res.ok) throw new Error("Delete failed");
 
       await fetchPolicies();
+      setVerifiedPolicy(null);
+      setShowPolicy(false);
       showSnackbar("Policy deleted", "success");
     } catch (err) {
       showSnackbar(err.message, "error");
@@ -236,10 +239,30 @@ setPolicies(pols);
                 onChange={(e) => setSearch({ ...search, provider_name: e.target.value })}
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button variant="contained" color="primary" fullWidth onClick={handleVerify}>
+            <Grid item xs={10} sm={4}>
+            <Button
+                
+                                           size="small"
+                            variant="contained"
+                            onClick={() => handleVerify()}
+                sx={{
+                                
+                                padding: '12px 24px',
+                                borderRadius: '10px',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                // boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.15)',
+                               
+                                backgroundColor: 'blue',  // Set hover background color to red
+                                color: '#fff',  // Change text color to white on hover
+                                
+                                // transition: 'all 0.3s ease', // Smooth transition for hover effects
+                            }}
+              >
                 Access Policy Details
               </Button>
+
+
             </Grid>
           </Grid>
   
@@ -342,6 +365,30 @@ setPolicies(pols);
             <Typography><strong>Coverage:</strong> {verifiedPolicy.coverage_details}</Typography>
             <Typography><strong>Valid From:</strong> {new Date(verifiedPolicy.valid_from).toLocaleDateString()}</Typography>
             <Typography><strong>Valid Until:</strong> {new Date(verifiedPolicy.valid_until).toLocaleDateString()}</Typography>
+            <Grid item xs={12} sm={6}>
+              <Button
+                            variant="outlined"
+                            color="error"  // This will set the color to red
+                            size="large"
+                            onClick={() => handleDelete(verifiedPolicy)}
+                            sx={{
+                                margin: '8px',
+                                padding: '12px 24px',
+                                borderRadius: '50px',
+                                border: '2px solid red',  // Set border to red
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.15)',
+                                '&:hover': {
+                                backgroundColor: 'red',  // Set hover background color to red
+                                color: '#fff',  // Change text color to white on hover
+                                },
+                                transition: 'all 0.3s ease', // Smooth transition for hover effects
+                            }}
+                            >
+                            Delete
+                            </Button>
+              </Grid>
           </Card>
         )}
   
@@ -398,6 +445,7 @@ setPolicies(pols);
                   onChange={(e) => setAmount(e.target.value)}
                 />
               </Grid>
+             
             </Grid>
           </DialogContent>
           <DialogActions>
@@ -405,7 +453,7 @@ setPolicies(pols);
             <Button variant="contained" onClick={() => handleAvailPlan(selectedPlan)}>Save Policy</Button>
           </DialogActions>
         </Dialog>
-        {availedPolicy&& (
+        {/* {availedPolicy&& (
           <Card sx={{ mt: 2, p: 2 }}>
             <Typography variant="h6">New Policy Availed</Typography>
             <Typography><strong>Policy Number(Make sure you remember this):</strong> {availedPolicy.policy_number} </Typography>
@@ -415,7 +463,35 @@ setPolicies(pols);
             <Typography><strong>Valid From:</strong> {new Date(availedPolicy.valid_from).toISOString().split("T")[0]}</Typography>
             <Typography><strong>Valid Till:</strong> {new Date(availedPolicy.valid_until).toISOString().split("T")[0]}</Typography>
           </Card>
-        )}
+        )} */}
+
+
+{availedPolicy && (
+  <Card sx={{ mt: 2, p: 2, position: 'relative' }}>
+    {/* Cross (Close) button */}
+    <IconButton
+      aria-label="close"
+      onClick={() => setAvailedPolicy(null)}
+      sx={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        color: (theme) => theme.palette.grey[600],
+      }}
+    >
+      <CloseIcon />
+    </IconButton>
+
+    {/* Policy Details */}
+    <Typography variant="h6">New Policy Availed</Typography>
+    <Typography><strong>Policy Number (Make sure you remember this):</strong> {availedPolicy.policy_number}</Typography>
+    <Typography><strong>Plan:</strong> {availedPolicy.provider_name}</Typography>
+    <Typography><strong>Coverage:</strong> {availedPolicy.coverage_details}</Typography>
+    <Typography><strong>Amount:</strong> ₹{availedPolicy.claim_limit}</Typography>
+    <Typography><strong>Valid From:</strong> {new Date(availedPolicy.valid_from).toISOString().split("T")[0]}</Typography>
+    <Typography><strong>Valid Till:</strong> {new Date(availedPolicy.valid_until).toISOString().split("T")[0]}</Typography>
+  </Card>
+)}
 
         
 
