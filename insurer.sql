@@ -13,15 +13,7 @@
 
 -- DELETE from doctors;
 DELETE from doctor_slots;
--- DELETE from slots;
-
-
-
--- INSERT INTO Doctors (hosp_id, doc_name, speciality) VALUES
--- (1, 'Dr. Ayesha Verma', 'Cardiology'),
--- (1, 'Dr. Raj Malhotra', 'Orthopedics'),
--- (1, 'Dr. Ravi Shankar', 'ENT'),
--- (1, 'Dr. Ananya Gupta', 'Ophthalmology');
+DELETE from AvailablePolicies;
 
 
 INSERT INTO Doctor_slots (doc_id, slot_id, date, booked) VALUES
@@ -44,36 +36,19 @@ INSERT INTO Doctor_slots (doc_id, slot_id, date, booked) VALUES
 (6, 3, '2025-04-26', FALSE);
 
 
---  -- Matching policy and provider entries
--- INSERT INTO InsurerData (policy_number, provider_name, coverage_details, valid_from, valid_until, claim_limit) VALUES
--- ('POL99999', 'CareWell', 'Covers annual health checks and diagnostics', '2023-01-01', '2026-01-01', 100000.00),
--- ('POL77777', 'HealthFirst', 'Comprehensive family coverage with zero copay', '2022-12-01', '2025-12-01', 400000.00),
--- ('POL44444', 'Apollo Health', 'Corporate policy with mental health coverage', '2023-03-01', '2026-03-01', 600000.00),
--- ('POL55555', 'MediCare Plus', 'Student health policy with OPD benefits', '2023-05-01', '2024-05-01', 150000.00),
--- ('POL66666', 'SecureLife', 'Emergency-only coverage with accident insurance', '2021-01-01', '2024-01-01', 200000.00),
--- ('POL88888', 'HealthFirst', 'Basic outpatient care and diagnostic tests', '2022-10-01', '2025-10-01', 180000.00),
--- ('POL10101', 'SecureLife', 'Full-body annual scans and lifestyle disease coverage', '2023-07-01', '2026-07-01', 500000.00),
--- ('POL20202', 'CareWell', 'Elderly plan with physiotherapy and rehab support', '2022-02-01', '2025-02-01', 300000.00),
--- ('POL30303', 'WellnessShield', 'Extended OPD, mental wellness, and diet consultation', '2023-04-01', '2026-04-01', 350000.00),
--- ('POL40404', 'MediCare Plus', 'Travel insurance + regular coverage', '2023-09-01', '2026-09-01', 250000.00);
-
--- INSERT INTO Slots (slot_id,timings) VALUES
--- ('1','8:30 AM'),
--- ('2','9:30 AM'),
--- ('3','10:30 AM'),
--- ('4','11:30 AM'),
--- ('5','12:30 PM'),
--- ('6','5:30 PM'),
--- ('7','6:30 PM'),
--- ('8','7:30 PM'),
--- ('9','8:30 PM'),
--- ('10','9:30 PM');
--- Insert dummy hospitals
--- INSERT INTO Hospitals (hospital_name, pincode, address, type, ambulance_availability, blood_bank_availability)
--- VALUES 
--- ('City Care Hospital', '226001', '123 MG Road, Lucknow', 'Private', true, true),
--- ('Metro Health Center', '226010', '45 Hazratganj, Lucknow', 'Private', false, false),
--- ('General Government Hospital', '226003', 'Near Charbagh Station, Lucknow', 'Public', true, true),
--- ('Green Life Clinic', '226012', 'Park Road, Aliganj, Lucknow', 'Public', false, false),
--- ('Sunrise Multi-speciality', '226016', 'Ring Road, Gomti Nagar, Lucknow', 'Private', true, false),
--- ('Red Cross Medical Center', '226007', 'Aminabad Main Market, Lucknow', 'Public', false, true);
+INSERT INTO AvailablePolicies (policy_name, provider_name, coverage_details, duration, claim_limit) VALUES
+('HealthSecure Basic', 'MediCare Plus', 'Covers hospitalization, emergency care, and basic diagnostics.', 24, 50000.00),
+('LifeShield Premium', 'LifeCare Inc.', 'Comprehensive life insurance with accidental coverage.', 36, 100000.00),
+('MediAssist Gold', 'Wellness First', 'Covers hospitalization, surgery, maternity and wellness checkups.', 24, 75000.00),
+('SeniorCare Plan', 'Golden Years Health', 'Specialized plan for seniors above 60, includes home visits.', 18, 60000.00),
+('FamilyHealth Combo', 'FamilyFirst', 'Covers up to 4 family members including dental and vision.', 12, 85000.00),
+('StudentHealth Safe', 'CampusCare', 'For students: covers OPD, mental health, and accidental care.', 12, 30000.00),
+('CancerShield', 'Hope Health', 'Dedicated cancer coverage including chemo and radiation.', 60, 150000.00),
+('TravelSecure', 'GlobeCare', 'Covers medical emergencies and baggage loss during travel.', 9, 20000.00),
+('DiabetesPlus', 'SugarCare', 'Plans tailored for diabetic patients including diagnostics.', 6, 45000.00),
+('MaternityCare Plan', 'NewLife Insurance', 'Maternity-related expenses including newborn cover.', 9, 55000.00),
+('Wellness360', 'FitLiving', 'Annual wellness and fitness monitoring coverage.', 54, 25000.00),
+('AccidentProtect', 'SafeSteps', 'Covers accidental injuries, fractures, and emergency treatment.', 24, 40000.00),
+('HeartSecure', 'CardioPlus', 'Covers heart surgeries, stent implants, and recovery.', 36, 120000.00),
+('PetCare Basic', 'PetWell', 'Covers basic vet visits and vaccinations for pets.', 9, 15000.00),
+('CyberHealth', 'DigitalCare', 'Mental health and ergonomic support for remote workers.', 48, 35000.00);

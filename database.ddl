@@ -160,7 +160,6 @@ CREATE TABLE Doctors (
 );
 
 CREATE TABLE Doctor_slots (
-
     doc_id INT not null,
     slot_id int not null,
     date TEXT NOT NULL,
