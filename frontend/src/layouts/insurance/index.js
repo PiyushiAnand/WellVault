@@ -246,12 +246,12 @@ setPolicies(pols);
           <Divider sx={{ my: 3 }} />
   
           <MDBox textAlign="center" display="flex" justifyContent="center" gap={2}>
-            <Button variant="outlined" onClick={() => setOpenDialog(true)} startIcon={<AddIcon />}>
+            <Button variant="contained" color="light" onClick={() => setOpenDialog(true)} startIcon={<AddIcon />}>
               Add External Policy
             </Button>
             <Button
               variant="contained"
-              color="secondary"
+              color="light"
               onClick={() => {
                 fetchAvailablePlans();
                 setAvailDialog(true);

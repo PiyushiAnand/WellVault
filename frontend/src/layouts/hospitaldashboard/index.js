@@ -70,7 +70,7 @@ function Dashboard() {
 
   const medicalCards = [
     { title: "Empty Slots", icon: "event_available", path: "/empty_slots" },
-    { title: "Patient Details", icon: "groups", path: "/patient_details" },
+    { title: "Patient Details", icon: "groups", path: "/patients" },
     { title: "Doctors", icon: "medical_services", path: "/doctors" },
     { title: "BloodBank", icon: "bloodtype", path: "/blood" },
     { title: "Ambulance", icon: "local_shipping", path: "/ambulance" },

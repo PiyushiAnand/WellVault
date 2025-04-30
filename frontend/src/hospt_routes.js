@@ -1,6 +1,6 @@
 import Ambulance from "layouts/ambulance";
 import Blood from "layouts/bloodbank";
-import Doctor from "layouts/doctors";
+import Doctors from "layouts/doctors";
 import Patients from "layouts/patients";
 import Empty_Slots from "layouts/empty_slots";
 import HospitalDashboard from "layouts/hospitaldashboard";
@@ -42,7 +42,7 @@ const hospital_routes = [
     key: "doctors",
     icon: <Icon fontSize="small">medical_services</Icon>,
     route: "/doctors",
-    component: <Doctor />,
+    component: <Doctors />,
     layout: "hosp_dash",
   },
   {

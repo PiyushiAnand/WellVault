@@ -1101,3 +1101,22 @@ app.post("/patient_details", ishospAuthenticated, async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+app.get("/doc_details",ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `select * from doctors where hosp_id = $1`,
+      [hosp_id]
+    );
+    console.log(result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching doctor details:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
