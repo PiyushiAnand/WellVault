@@ -15,7 +15,7 @@ const pool = new Pool({
   user: "postgres",
   host: "localhost",
   database: "project",
-  password: "Aak#0907",
+  password: "postgres",
   port: 5432,
 });
 
@@ -1078,3 +1078,26 @@ app.get("/appointments", isAuthenticated, async (req, res) => {
   }
 }
 );
+
+//patient_details
+app.post("/patient_details", ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `select u.name, a.doctor_name, a.appointment_date, s.timings from users u, appointments a,
+       slots s, hospitals b  where s.slot_id = a.slot_id and 
+       b.hosp_id  = $1 and a.username = u.username`,
+      [hosp_id]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching patient details:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
