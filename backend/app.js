@@ -1120,3 +1120,204 @@ app.get("/doc_details",ishospAuthenticated, async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.get("/show-ambulance",ishospAuthenticated, async (req, res) => {  
+  try {
+    const hosp_id = req.session.hosp_id;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `select * from ambulance where hosp_id = $1`,
+      [hosp_id]
+    );
+    console.log(result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching doctor details:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+);
+app.post("/add-ambulance", ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+    const {vehicle_number,type } = req.body;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+    const availability = true;
+    const result = await pool.query(
+      `INSERT INTO ambulance (vehicle_number, availability, hosp_id,type) VALUES ($1, $2, $3,$4)`,
+      [vehicle_number, availability, hosp_id,type]
+    );
+
+    await pool.query(
+      `update hospitals set ambulance_availability = true where hosp_id = $1`,
+      [hosp_id]
+    );
+
+    res.status(201).json({ message: "Ambulance added successfully" });
+  } catch (err) {
+    console.error("Error adding ambulance:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+);
+app.post("/update-ambulance", ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+    const { vehicle_number, availability } = req.body;
+    console.log(req.body);
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `UPDATE ambulance SET availability = $1 WHERE vehicle_number = $2 AND hosp_id = $3`,
+      [availability, vehicle_number, hosp_id]
+    );
+
+    res.status(200).json({ message: "Ambulance updated successfully" });
+  } catch (err) {
+    console.error("Error updating ambulance:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+);
+app.post("/delete-ambulance", ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+    const { vehicle_number } = req.body;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `DELETE FROM ambulance WHERE vehicle_number = $1 AND hosp_id = $2`,
+      [vehicle_number, hosp_id]
+    );
+
+    const check = await pool.query(
+      `SELECT * FROM ambulance WHERE hosp_id = $1`,
+      [hosp_id]
+    );
+    if(check.length===0){
+      await pool.query(
+        `update hospitals set ambulance_availability = false where hosp_id = $1`,
+        [hosp_id]
+      );
+    }
+    res.status(200).json({ message: "Ambulance deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting ambulance:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+);
+
+app.get("/show-bloodbank",ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `select * from bloodbank where hosp_id = $1`,
+      [hosp_id]
+    );
+    // console.log(result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching doctor details:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+);  
+
+app.post("/add-bloodbank", ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+    const { blood_group,count } = req.body;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO bloodbank (blood_group, count, hosp_id) VALUES ($1, $2, $3)`,
+      [blood_group, count, hosp_id]
+    );
+
+    await pool.query(
+      `update hospitals set blood_bank_availability = true where hosp_id = $1`,
+      [hosp_id]
+    );
+
+    res.status(201).json({ message: "Blood bank added successfully" });
+  } catch (err) {
+    console.error("Error adding blood bank:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+);
+
+
+app.post("/update-bloodbank", ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+    const { blood_group, count} = req.body;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `UPDATE bloodbank SET count = $1 WHERE blood_group = $2 AND hosp_id = $3`,
+      [count, blood_group, hosp_id]
+    );
+
+    res.status(200).json({ message: "Blood bank updated successfully" });
+  } catch (err) {
+    console.error("Error updating blood bank:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+);
+app.post("/delete-bloodbank", ishospAuthenticated, async (req, res) => {
+  try {
+    const hosp_id = req.session.hosp_id;
+    const { blood_group } = req.body;
+
+    if (!hosp_id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    const result = await pool.query(
+      `DELETE FROM bloodbank WHERE blood_group = $1 AND hosp_id = $2`,
+      [blood_group, hosp_id]
+    );
+
+    const check = await pool.query(
+      `SELECT * FROM bloodbank WHERE hosp_id = $1`,
+      [hosp_id]
+    );
+    if(check.length===0){
+      await pool.query(
+        `update hospitals set blood_bank_availability = false where hosp_id = $1`,
+        [hosp_id]
+      );
+    }
+    res.status(200).json({ message: "Blood bank deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting blood bank:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+);

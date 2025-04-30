@@ -13,6 +13,8 @@ DROP TABLE IF EXISTS Vaccines CASCADE;
 DROP TABLE IF EXISTS UserHealthData CASCADE;
 DROP TABLE IF EXISTS Users CASCADE;
 DROP TABLE IF EXISTS OngoingTreatment CASCADE;
+drop table if exists ambulance cascade;
+drop table if exists Doctor_slots cascade;
 
 -- Drop ENUM types if they exist
 DROP TYPE IF EXISTS gender_enum;
@@ -166,3 +168,19 @@ CREATE TABLE Doctor_slots (
     booked BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (doc_id, slot_id, date)
 );
+
+create table ambulance (
+    vehicle_number text primary key,
+    availability boolean default true not null,
+    hosp_id int not null,
+    type text not null,
+    foreign key (hosp_id) REFERENCES hospitals(hosp_id) on delete cascade
+);
+
+create table blood_bank (
+   blood_group blood_group_enum primary key,
+   count int not null,
+   hosp_id int not null,
+   foreign key (hosp_id) REFERENCES hospitals(hosp_id) on delete cascade
+);
+
