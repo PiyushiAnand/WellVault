@@ -71,7 +71,6 @@ function Doctors() {
             <TextField
               label="Search by Speciality"
               fullWidth
-              InputLabelProps={{ shrink: true }}
               value={specFilter}
               onChange={(e) => setspecFilter(e.target.value)}
             />
@@ -94,9 +93,8 @@ function Doctors() {
           <Grid item xs={12} sm={6} md={4} key={index}>
             <Card sx={{ minHeight: 200, padding: 2 }}>
               <CardContent>
-                <Typography variant="body1">{item.doc_name}</Typography>
-                <Typography variant="body2">
-                    Speciality: {item.speciality}
+                <Typography variant="body1"><strong>{item.doc_name}</strong></Typography>
+                <Typography variant="body2"><strong>Speciality: </strong>{item.speciality}
                     </Typography>
               </CardContent>
             </Card>

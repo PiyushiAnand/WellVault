@@ -1229,7 +1229,7 @@ app.get("/show-bloodbank",ishospAuthenticated, async (req, res) => {
     }
 
     const result = await pool.query(
-      `select * from bloodbank where hosp_id = $1`,
+      `select * from blood_bank where hosp_id = $1`,
       [hosp_id]
     );
     // console.log(result.rows);
@@ -1251,7 +1251,7 @@ app.post("/add-bloodbank", ishospAuthenticated, async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO bloodbank (blood_group, count, hosp_id) VALUES ($1, $2, $3)`,
+      `INSERT INTO blood_bank (blood_group, count, hosp_id) VALUES ($1, $2, $3)`,
       [blood_group, count, hosp_id]
     );
 
@@ -1279,7 +1279,7 @@ app.post("/update-bloodbank", ishospAuthenticated, async (req, res) => {
     }
 
     const result = await pool.query(
-      `UPDATE bloodbank SET count = $1 WHERE blood_group = $2 AND hosp_id = $3`,
+      `UPDATE blood_bank SET count = count+$1 WHERE blood_group = $2 AND hosp_id = $3`,
       [count, blood_group, hosp_id]
     );
 
@@ -1300,12 +1300,12 @@ app.post("/delete-bloodbank", ishospAuthenticated, async (req, res) => {
     }
 
     const result = await pool.query(
-      `DELETE FROM bloodbank WHERE blood_group = $1 AND hosp_id = $2`,
+      `DELETE FROM blood_bank WHERE blood_group = $1 AND hosp_id = $2`,
       [blood_group, hosp_id]
     );
 
     const check = await pool.query(
-      `SELECT * FROM bloodbank WHERE hosp_id = $1`,
+      `SELECT * FROM blood_bank WHERE hosp_id = $1`,
       [hosp_id]
     );
     if(check.length===0){

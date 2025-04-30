@@ -58,7 +58,7 @@ function LabReports() {
           throw new Error("Failed to fetch lab reports");
         }
         const data = await response.json();
-        console.log("Lab reports data:", data.data);
+        // console.log("Lab reports data:", data.data);
         setReports(data.data);
       } catch (error) {
         console.error("Error fetching lab reports:", error);
@@ -66,7 +66,7 @@ function LabReports() {
     };
 
     fetchLabReports();
-  }, []);
+  }, [newReport]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
