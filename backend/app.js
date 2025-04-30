@@ -701,7 +701,7 @@ app.get('/insurance', isAuthenticated, async (req, res) => {
   const username = req.session.username;
   try {
     const result = await pool.query(
-      `SELECT * FROM Insurance WHERE username = $1`,
+      `select i.policy_number, i.provider_name, id.coverage_details, id.valid_from, id.valid_until, id.claim_limit from insurance i join insurerdata id on i.policy_number = id.policy_number and i.provider_name = id.provider_name where i.username = $1;`,
       [username]
     );
     const record = result.rows.length > 0 ? result.rows[0] : null;
@@ -718,7 +718,8 @@ app.post('/insurance/verify-policy', async (req, res) => {
 
   try {
     const insuranceResult = await pool.query(
-      `SELECT * FROM Insurance WHERE policy_number = $1 AND provider_name = $2 AND username = $3`,
+      `select i.policy_number, i.provider_name, id.coverage_details, id.valid_from, id.valid_until, id.claim_limit from insurance i 
+      join insurerdata id on i.policy_number = $1 and i.provider_name = $2 where i.username = $3`,
       [policy_number, provider_name, username]
     );
 
@@ -726,16 +727,16 @@ app.post('/insurance/verify-policy', async (req, res) => {
       return res.status(404).json({ message: 'Policy not found' });
     }
 
-    const dataResult = await pool.query(
-      `SELECT * FROM InsurerData WHERE policy_number = $1 AND provider_name = $2`,
-      [policy_number, provider_name]
-    );
+    // const dataResult = await pool.query(
+    //   `SELECT * FROM InsurerData WHERE policy_number = $1 AND provider_name = $2`,
+    //   [policy_number, provider_name]
+    // );
 
-    if (dataResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Insurer data not found' });
-    }
+    // if (dataResult.rows.length === 0) {
+    //   return res.status(404).json({ message: 'Insurer data not found' });
+    // }
 
-    return res.json({ data: dataResult.rows[0] });
+    return res.json({ data: insuranceResult.rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -744,7 +745,7 @@ app.post('/insurance/verify-policy', async (req, res) => {
 
 
 app.post("/insurance/add-policy", isAuthenticated, async (req, res) => {
-  const { policy_number, provider_name, coverage_details, start_date, end_date, amount } = req.body;
+  const { policy_number, provider_name, coverage_details, valid_from, valid_until, amount } = req.body;
   
   try {
     // 1. Insert into InsurerData (NO username here)
@@ -752,7 +753,7 @@ app.post("/insurance/add-policy", isAuthenticated, async (req, res) => {
       `INSERT INTO InsurerData 
       (policy_number, provider_name, coverage_details, valid_from, valid_until, claim_limit)
       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [policy_number, provider_name, coverage_details, start_date, end_date, amount]
+      [policy_number, provider_name, coverage_details, valid_from, valid_until, amount]
     );
 
     // 2. Link to user in Insurance table
@@ -792,7 +793,7 @@ app.post('/insurance/delete-policy', isAuthenticated, async (req, res) => {
 
 app.post('/insurance/avail-plan', isAuthenticated, async (req, res) => {
   try {
-    const { policy_name, amount } = req.body;
+    const { policy_name, start_date } = req.body;
     const policyResult = await pool.query(
       `SELECT * FROM AvailablePolicies WHERE policy_name = $1`,
       [policy_name]
@@ -802,18 +803,18 @@ app.post('/insurance/avail-plan', isAuthenticated, async (req, res) => {
       return res.status(404).json({ message: "Policy not found" });
     }
 
-    const { provider_name, coverage_details, duration } = policyResult.rows[0];
+    const { provider_name, coverage_details, duration,claim_limit } = policyResult.rows[0];
     const policy_number = await generatePolicyNumber();
-    const valid_from = new Date();
+    const valid_from =start_date
     const valid_until = new Date(valid_from);
     valid_until.setMonth(valid_until.getMonth() + duration);
 
     // Fixed insert with correct column names
-    await pool.query(
+    const result = await pool.query(
       `INSERT INTO InsurerData 
       (policy_number, provider_name, coverage_details, valid_from, valid_until, claim_limit)
-      VALUES ($1, $2, $3, $4, $5, $6)`,
-      [policy_number, provider_name, coverage_details, valid_from, valid_until, amount]
+      VALUES ($1, $2, $3, $4, $5, $6) returning *`,
+      [policy_number, provider_name, coverage_details, valid_from, valid_until, claim_limit]
     );
 
     await pool.query(
@@ -822,10 +823,10 @@ app.post('/insurance/avail-plan', isAuthenticated, async (req, res) => {
       [req.session.username, provider_name, policy_number]
     );
 
-    res.json({ message: "Plan availed successfully" });
+    res.json({ result: result.rows[0],message: "Plan availed successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error availing plan" });
+    res.status(500).json({ message: err });
   }
 });
 
