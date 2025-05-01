@@ -12,6 +12,7 @@ import MDBox from "components/MDBox";
 import MDInput from "components/MDInput";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import QR_image from "../../assets/images/WhatsApp Image 2025-05-01 at 11.56.17 AM.jpeg";
 
 function Appointments() {
   const [hospital, setHospital] = useState("");
@@ -22,6 +23,9 @@ function Appointments() {
   const [slots, setSlots] = useState([]);
   const [slot, setSlot] = useState("");
   const [bookedAppointments, setBookedAppointments] = useState([]);
+  //state for pay button
+  const [pay, setPay] = useState(false);
+  const [booked, setBooked] = useState(false);
 
   const navigate = useNavigate();
 
@@ -123,11 +127,14 @@ function Appointments() {
       if(response.status === 400) {
         alert("Please select a valid date and slot");
       }
+      if (response.status === 500) return alert("Server error, please try again later");
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.message || "Error creating appointment");
       }
       alert("Appointment created successfully");
+      setBooked(true);
+      setPay(false);
         setSlot("");
     // Refresh slots
     await listslots();
@@ -150,6 +157,35 @@ function Appointments() {
       setBookedAppointments(data.data|| []);
     } catch (err) {
       console.error("Error fetching booked appointments:", err);
+    }
+  };
+
+  const handle_payment = async (apt_id) => {
+    try {
+      const response = await fetch(`${apiUrl}/payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ appointment_id: apt_id}),
+      });
+      if (response.status === 400) {
+        alert("Please select a valid date and slot");
+      }
+      if (response.status === 500) return alert("Server error, please try again later");
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error creating appointment");
+      }
+      alert("Payment successful");
+      setBooked(true);
+      setPay(false);
+      setSlot("");
+      // Refresh slots
+      await listslots();
+      await listBookedAppointments();
+    } catch (err) {
+      console.log(err);
+      alert("Error: " + err.message);
     }
   };
   
@@ -240,7 +276,7 @@ function Appointments() {
             type="submit"
             variant="contained"
             color="primary"
-
+           
             sx={{
                                 margin: '20px',
                                 padding: '12px 24px',
@@ -257,26 +293,73 @@ function Appointments() {
           >
             Book Appointment
           </Button>
+         
         </form>
       </MDBox>
       <MDBox mt={5}>
-        <Typography variant="h5" gutterBottom>
-            Booked Appointments
-        </Typography>
-        {bookedAppointments.length === 0 ? (
-            <Typography>No appointments yet</Typography>
-        ) : (
-            bookedAppointments.map((appt, idx) => (
-            <MDBox key={idx} my={1} p={2} border="1px solid #ccc" borderRadius="8px">
-                <Typography><strong>Hospital Name:</strong> {appt.hospital_name || "N/A"}</Typography>
-                <Typography><strong>Doctor Name:</strong> {appt.doctor_name || "N/A"}</Typography>
-                <Typography><strong>Appointment Date:</strong> {new Date(appt.appointment_date).toLocaleDateString()}</Typography>
-                <Typography><strong>Timings:</strong> {appt.timings}</Typography>
-                
-            </MDBox>
-            ))
+  <Typography variant="h5" gutterBottom>
+    Booked Appointments
+  </Typography>
+  {bookedAppointments.length === 0 ? (
+    <Typography>No appointments yet</Typography>
+  ) : (
+    bookedAppointments.map((appt, idx) => (
+      <MDBox key={idx} my={1} p={2} border="1px solid #ccc" borderRadius="8px">
+        <Typography><strong>Hospital Name:</strong> {appt.hospital_name || "N/A"}</Typography>
+        <Typography><strong>Doctor Name:</strong> {appt.doctor_name || "N/A"}</Typography>
+        <Typography><strong>Appointment Date:</strong> {new Date(appt.appointment_date).toLocaleDateString()}</Typography>
+        <Typography><strong>Timings:</strong> {appt.timings || "N/A"}</Typography>
+
+        {!appt.paid && (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setPay(true)}
+            sx={{
+              margin: '20px',
+              padding: '12px 24px',
+              borderRadius: '10px',
+              fontWeight: 'bold',
+              fontSize: '16px',
+              backgroundColor: 'green',
+              color: '#fff',
+            }}
+          >
+            Pay Now (500)
+          </Button>
         )}
-    </MDBox>
+
+        {pay && (
+          <MDBox mt={3} textAlign="center">
+            <img src={QR_image} alt="QR Code" style={{ width: "200px", height: "200px" }} />
+            <Typography variant="h6">Scan to Pay</Typography>
+            <Typography variant="body2">Please pay the amount to confirm your appointment.</Typography>
+          </MDBox>
+        )}
+
+        {pay && !appt.paid &&
+          (<Button
+            variant="contained"
+            color="primary"
+            onClick={() => handle_payment(appt.apt_id)}
+            sx={{
+              margin: '20px',
+              padding: '12px 24px',
+              borderRadius: '10px',
+              fontWeight: 'bold',
+              fontSize: '16px',
+              backgroundColor: 'blue',  // Set hover background color to red
+              color: '#fff',  // Change text color to white on hover
+            }}
+          >
+            Confirm Payment
+        </Button>)
+}
+      </MDBox>
+    ))
+  )}
+</MDBox>
+
 
     </DashboardLayout>
   );

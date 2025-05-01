@@ -15,6 +15,8 @@ DROP TABLE IF EXISTS Users CASCADE;
 DROP TABLE IF EXISTS OngoingTreatment CASCADE;
 drop table if exists ambulance cascade;
 drop table if exists Doctor_slots cascade;
+drop table if exists blood_bank cascade;
+drop table if exists Payments cascade;
 
 -- Drop ENUM types if they exist
 DROP TYPE IF EXISTS gender_enum;
@@ -100,6 +102,14 @@ CREATE TABLE Appointments (
     slot_id INT NOT NULL,  
     FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE,
     FOREIGN KEY (slot_id) REFERENCES Slots(slot_id)
+);
+
+CREATE TABLE Payments (
+    payment_id SERIAL primary key,
+    apt_id int not null,
+    amount Numeric default 0,
+    paid BOOLEAN default FALSE,
+    foreign key (apt_id) references appointments(apt_id) on delete cascade
 );
 
 -- TREATMENT 

@@ -15,7 +15,7 @@ const pool = new Pool({
   user: "postgres",
   host: "localhost",
   database: "project",
-  password: "postgres",
+  password: "Aak#0907",
   port: 5432,
 });
 
@@ -1046,7 +1046,11 @@ app.post("/appointments", isAuthenticated, async (req, res) => {
       "INSERT INTO Appointments (username, hospital_name, doctor_name, appointment_date, slot_id) VALUES ($1, $2, $3, $4, $5);",
       [req.session.username, hospital_name, doc_name, date, slot_id]
     );
-
+    
+    await pool.query(
+      "INSERT INTO payments (apt_id, amount) VALUES ((SELECT apt_id FROM Appointments WHERE username = $1 AND hospital_name = $2 AND doctor_name = $3 AND appointment_date = $4 AND slot_id = $5), 0);",
+      [req.session.username, hospital_name, doc_name, date, slot_id]
+    );
     // Update the slot to booked
     await pool.query(
       "UPDATE Doctor_slots SET booked = true WHERE doc_id = (SELECT doc_id FROM Doctors WHERE hosp_id = (SELECT hosp_id FROM Hospitals WHERE hospital_name = $1) AND doc_name = $2) AND date = $3 AND slot_id = $4;",
@@ -1065,7 +1069,7 @@ app.get("/appointments", isAuthenticated, async (req, res) => {
   try {
     const user_name = req.session.username;
 
-    const query = `SELECT * FROM Appointments natural join slots WHERE username = $1;`;
+    const query = `SELECT * FROM Appointments natural join slots natural join payments  WHERE username = $1;`;
     const result = await pool.query(query, [user_name]);
 
     if (result.rows.length === 0) {
@@ -1080,6 +1084,20 @@ app.get("/appointments", isAuthenticated, async (req, res) => {
 }
 );
 
+app.post("/payment", isAuthenticated, async (req, res) => { 
+  try {
+    const { apt_id, amount } = req.body;
+    console.log(apt_id, amount);
+    const query = `UPDATE payments SET amount = 500, paid = true WHERE apt_id = $1;`;
+    await pool.query(query, [apt_id]);
+
+    res.status(200).json({ message: "Payment updated successfully" });
+  } catch (error) {
+    console.error("Error updating payment", error);
+    res.status(500).send("Error while updating payment");
+  }
+}
+);
 //patient_details
 app.post("/patient_details", ishospAuthenticated, async (req, res) => {
   try {
@@ -1323,27 +1341,3 @@ app.post("/delete-bloodbank", ishospAuthenticated, async (req, res) => {
 }
 );
 
-// server.js or a backend API route
-const Razorpay = require("razorpay");
-
-const razorpay = new Razorpay({
-  key_id: 'YOUR_KEY_ID',
-  key_secret: 'YOUR_SECRET_KEY',
-});
-
-app.post('/create-order', async (req, res) => {
-  const { amount } = req.body;
-
-  const options = {
-    amount: amount * 100, // in paise
-    currency: "INR",
-    payment_capture: 1,
-  };
-
-  try {
-    const order = await razorpay.orders.create(options);
-    res.json(order);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
