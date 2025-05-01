@@ -1086,8 +1086,8 @@ app.get("/appointments", isAuthenticated, async (req, res) => {
 
 app.post("/payment", isAuthenticated, async (req, res) => { 
   try {
-    const { apt_id, amount } = req.body;
-    console.log(apt_id, amount);
+    const { apt_id } = req.body;
+    console.log(apt_id);
     const query = `UPDATE payments SET amount = 500, paid = true WHERE apt_id = $1;`;
     await pool.query(query, [apt_id]);
 

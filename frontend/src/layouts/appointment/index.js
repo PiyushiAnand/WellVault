@@ -166,7 +166,7 @@ function Appointments() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ appointment_id: apt_id}),
+        body: JSON.stringify({apt_id}),
       });
       if (response.status === 400) {
         alert("Please select a valid date and slot");
@@ -329,7 +329,7 @@ function Appointments() {
           </Button>
         )}
 
-        {pay && (
+        {pay && !appt.paid &&(
           <MDBox mt={3} textAlign="center">
             <img src={QR_image} alt="QR Code" style={{ width: "200px", height: "200px" }} />
             <Typography variant="h6">Scan to Pay</Typography>
