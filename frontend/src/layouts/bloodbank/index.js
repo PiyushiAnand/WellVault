@@ -27,7 +27,7 @@ function Blood() {
   const [bloodBanks, setBloodBanks] = useState([]);
   const [formData, setFormData] = useState({ blood_group: "", count: 1 }); // Set initial count to 1
   const [errorMessage, setErrorMessage] = useState("");
-
+  const navigate = useNavigate();
   const fetchBloodBanks = async () => {
     try {
       const response = await fetch(`${apiUrl}/show-bloodbank`, {
@@ -35,6 +35,10 @@ function Blood() {
         credentials: "include",
       });
       const data = await response.json();
+      if (data.status === 401) {
+        navigate("/");
+        return;
+      }
       setBloodBanks(data);
     } catch (error) {
       console.error("Failed to fetch blood banks:", error);
@@ -65,6 +69,12 @@ function Blood() {
       if (response.ok) {
         fetchBloodBanks(); // Refresh list
         setFormData({ blood_group: "", count: 1 }); // Reset the form
+      }
+      else {
+        const errorData = await response.json();
+        
+        setErrorMessage(errorData.message || "Failed to add blood bank.");
+        alert(errorData.message || "Failed to add blood bank.");
       }
     } catch (error) {
       console.error("Failed to add blood bank:", error);
@@ -173,7 +183,10 @@ function Blood() {
             label="Count"
             name="count"
             type="number"
-        
+           
+            disabled={formData.blood_group === ""}
+            inputProps={{ min: 1 }}
+
             value={formData.count}
             onChange={handleInputChange}
             fullWidth
@@ -214,7 +227,7 @@ function Blood() {
                     <b>Count:</b>
                       <IconButton
                         onClick={() => handleUpdateCount(bloodBank.blood_group, 'decrement')}
-                        disabled={bloodBank.count <= 0}
+                        disabled={bloodBank.count <= 1}
                       >
                         <RemoveIcon />
                       </IconButton>
