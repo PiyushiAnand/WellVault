@@ -26,6 +26,7 @@ import MDButton from "components/MDButton";
 import { apiUrl } from "../../config/config.js";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import Chip from "@mui/material/Chip";
 
 function Treatments() {
   const navigate = useNavigate();
@@ -165,7 +166,17 @@ function Treatments() {
                   <Typography><strong>Doctor:</strong> {treatment.doctor}</Typography>
                   <Typography><strong>Start Date:</strong> {treatment.start_date}</Typography>
                   <Typography><strong>End Date:</strong> {treatment.end_date}</Typography>
-                  <Typography><strong>Status:</strong> {treatment.status}</Typography>
+                  <Typography>
+                    <strong>Status:</strong> 
+                    <Chip 
+                      label={treatment.status}
+                      color={
+                        treatment.status === "Completed" ? "success" :
+                        treatment.status === "Paused" ? "warning" : "info"
+                      }
+                      sx={{ marginLeft: 1 }}
+                    />
+                  </Typography>
                   <Typography><strong>Description:</strong> {treatment.description}</Typography>
                 </MDBox>
               </Card>
