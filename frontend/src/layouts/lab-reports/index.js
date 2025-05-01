@@ -243,7 +243,7 @@ function LabReports() {
               }}
             >
               <AddIcon sx={{ fontSize: 48, color: "text.secondary" }} />
-              <Typography variant="h6" color="text.secondary">
+              <Typography variant="h6" color="text.secondary" >
                 Add New Report
               </Typography>
             </Card>
@@ -268,7 +268,17 @@ function LabReports() {
           />
 
           <Grid item xs={12}>
-              <Button variant="outlined" component="label" fullWidth>
+              <Button variant="outlined" component="label" fullWidth
+                sx={{
+                  boxShadow: 3,            // Elevation
+                  borderRadius: 2,         // Rounded corners
+                  minHeight: 40,           // Minimum height
+                  width: "100%",
+                  backgroundColor: "blue",
+                  color: "#fff", 
+                }}
+              
+              >
                 Upload Report File
                 <input
                   type="file"

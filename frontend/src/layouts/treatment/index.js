@@ -37,8 +37,8 @@ function Treatments() {
   const [newTreatment, setNewTreatment] = useState({
     treatment_name: "",
     doctor: "",
-    start_date: new Date().toISOString().split("T")[0],
-    end_date: new Date().toISOString().split("T")[0],
+    start_date: "",
+    end_date: "",
     status: "",
     description: "",
   });
@@ -74,8 +74,8 @@ function Treatments() {
     setNewTreatment({
       treatment_name: "",
       doctor: "",
-      start_date: new Date().toISOString().split("T")[0],
-      end_date: new Date().toISOString().split("T")[0],
+      start_date: "",
+      end_date: "",
       status: "",
       description: "",
     });
@@ -232,6 +232,7 @@ function Treatments() {
                     fullWidth
                     value={newTreatment.start_date}
                     onChange={handleInputChange}
+                    InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -242,10 +243,20 @@ function Treatments() {
                     fullWidth
                     value={newTreatment.end_date}
                     onChange={handleInputChange}
+                    InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth required
+                  sx={{
+                    boxShadow: 3,            // Elevation
+                    borderRadius: 2,         // Rounded corners
+                    minHeight: 40,           // Minimum height
+                    width: "100%",
+                    backgroundColor: "#f9f9f9", 
+                  }}
+
+                >
                   <InputLabel id="status-label">Status</InputLabel>
                   <Select
                     labelId="status-label"
@@ -253,6 +264,11 @@ function Treatments() {
                     value={newTreatment.status}
                     onChange={handleInputChange}
                     label="Status"
+                     sx={{
+                borderRadius: 2,        // Rounded corners inside
+                 minHeight: 40,          // Minimum height
+               
+              }}
                   >
                     <MenuItem value="Ongoing">Ongoing</MenuItem>
                     <MenuItem value="Paused">Paused</MenuItem>

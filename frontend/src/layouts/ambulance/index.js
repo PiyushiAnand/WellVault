@@ -12,6 +12,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { useTheme } from "@mui/material/styles";
+
 const vehicleNumberPattern = /^[A-Z]{2}\s\d{2}\s[A-Z]{2}\s\d{4}$/;
 const AmbulanceTypeEnum = {
     EMERGENCY: "Emergency",
@@ -23,6 +24,7 @@ function Ambulance() {
   const [ambulances, setAmbulances] = useState([]);
   const [formData, setFormData] = useState({ vehicle_number: "", type: "" }); // State to manage form data
     const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
   const fetchAmbulances = async () => {
     try {
       const response = await fetch(`${apiUrl}/show-ambulance`, {
@@ -30,6 +32,7 @@ function Ambulance() {
         credentials: "include",
       });
       const data = await response.json();
+      
       setAmbulances(data);
     } catch (error) {
       console.error("Failed to fetch ambulances:", error);
@@ -95,6 +98,11 @@ const handleUpdateAvailability = async (vehicle_number, availability) => {
         fetchAmbulances(); // Refresh list
         setFormData({ vehicle_number: "", type: "" }); // Clear the form
       }
+      else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || "Failed to add ambulance");
+        alert(errorData.message || "Failed to add ambulance");
+      }
     } catch (error) {
       console.error("Failed to add ambulance:", error);
     }
@@ -142,21 +150,40 @@ const handleUpdateAvailability = async (vehicle_number, availability) => {
         error={!!errorMessage} // Highlight input if error exists
         helperText={errorMessage}
       />
-         <FormControl fullWidth margin="normal" error={!!errorMessage}>
-                        <InputLabel>Type</InputLabel>
-                        <Select
-                        name="type"
-                        value={formData.type}
-                        onChange={handleInputChange}
-                        label="Type"
-                        >
-                        {Object.keys(AmbulanceTypeEnum).map((key) => (
-                            <MenuItem key={key} value={AmbulanceTypeEnum[key]}>
-                            {AmbulanceTypeEnum[key]}
-                            </MenuItem>
-                        ))}
-                        </Select>
-                    </FormControl>
+         <FormControl
+            fullWidth
+            margin="normal"
+            error={!!errorMessage}
+            sx={{
+              boxShadow: 3,            // Elevation
+              borderRadius: 2,         // Rounded corners
+              minHeight: 40,           // Minimum height
+              width: "100%",
+              backgroundColor: "#f9f9f9", 
+            }}
+          >
+            <InputLabel id="type-label">Type</InputLabel>
+            <Select
+              labelId="type-label"
+              id="type"
+              name="type"
+              value={formData.type}
+              onChange={handleInputChange}
+              label="Type"
+              sx={{
+                borderRadius: 2,        // Rounded corners inside
+                 minHeight: 40,          // Minimum height
+                            // Padding left, not full padding
+              }}
+            >
+              {Object.keys(AmbulanceTypeEnum).map((key) => (
+                <MenuItem key={key} value={AmbulanceTypeEnum[key]}>
+                  {AmbulanceTypeEnum[key]}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
                     <Button
                             
                             size="medium"

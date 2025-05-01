@@ -12,10 +12,10 @@ const mime = require("mime-types");
 // PostgreSQL connection
 // NOTE: use YOUR postgres username and password here
 const pool = new Pool({
-  user: "whoknows",
+  user: "postgres",
   host: "localhost",
   database: "project",
-  password: "whoknows",
+  password: "postgres",
   port: 5432,
 });
 
@@ -161,7 +161,7 @@ app.post("/login", async (req, res) => {
       req.session.username = user.username;
       res.status(200).json({ message: "Login successful" });
     } else {
-        console.log("Invalid credentials");
+        //console.log("Invalid credentials");
       res.status(400).json({ message: "Invalid credentials" });
     }
   } catch (err) {
@@ -304,7 +304,7 @@ app.post("/add-vaccine", isAuthenticated, async (req, res) => {
     
     const query = `INSERT INTO Vaccines (username, vaccine_name, no_of_dose, year_administered, administering_hospital) VALUES ($1, $2, $3, $4, $5) returning *;`;
     const result = await pool.query(query, [user_name, vaccine_name, no_of_dose, year_administered, administering_hospital]);
-    console.log(result.rows)
+    // console.log(result.rows)
     res.status(201).json({vaccine:result.rows[0]});
   } catch (error) {
     console.error("Error adding vaccine", error);
@@ -1027,7 +1027,7 @@ app.post("/slots", isAuthenticated, async (req, res) => {
 app.post("/appointments", isAuthenticated, async (req, res) => {
   try {
     const { hosp, doc, a_date, slot } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     
     const hospital_name = hosp;
     const doc_name = doc;
@@ -1056,7 +1056,7 @@ app.post("/appointments", isAuthenticated, async (req, res) => {
       "UPDATE Doctor_slots SET booked = true WHERE doc_id = (SELECT doc_id FROM Doctors WHERE hosp_id = (SELECT hosp_id FROM Hospitals WHERE hospital_name = $1) AND doc_name = $2) AND date = $3 AND slot_id = $4;",
       [hospital_name, doc_name, date, slot_id]
     );
-    console.log("Appointment booked successfully");
+    // console.log("Appointment booked successfully");
     res.status(200).json({ message: "Appointment booked successfully" });
   } catch (error) {
     console.error("Error booking appointment", error);
@@ -1087,7 +1087,7 @@ app.get("/appointments", isAuthenticated, async (req, res) => {
 app.post("/payment", isAuthenticated, async (req, res) => { 
   try {
     const { apt_id } = req.body;
-    console.log(apt_id);
+    // console.log(apt_id);
     const query = `UPDATE payments SET amount = 500, paid = true WHERE apt_id = $1;`;
     await pool.query(query, [apt_id]);
 
@@ -1132,7 +1132,7 @@ app.get("/doc_details",ishospAuthenticated, async (req, res) => {
       `select * from doctors where hosp_id = $1`,
       [hosp_id]
     );
-    console.log(result.rows);
+    // console.log(result.rows);
     res.json(result.rows);
   } catch (err) {
     console.error("Error fetching doctor details:", err);
@@ -1173,7 +1173,10 @@ app.post("/add-ambulance", ishospAuthenticated, async (req, res) => {
       `INSERT INTO ambulance (vehicle_number, availability, hosp_id,type) VALUES ($1, $2, $3,$4)`,
       [vehicle_number, availability, hosp_id,type]
     );
-
+    // Check if the ambulance was added successfully
+    if (result.rowCount === 0) {
+      return res.status(500).json({ error: "Failed to add ambulance" });
+    }
     await pool.query(
       `update hospitals set ambulance_availability = true where hosp_id = $1`,
       [hosp_id]
@@ -1181,8 +1184,13 @@ app.post("/add-ambulance", ishospAuthenticated, async (req, res) => {
 
     res.status(201).json({ message: "Ambulance added successfully" });
   } catch (err) {
-    console.error("Error adding ambulance:", err);
-    res.status(500).json({ error: "Internal server error" });
+    if (err.code === '23505') {
+      // 23505 = unique_violation (e.g. primary key or unique constraint)
+      return res.status(409).json({ error: "Ambulance with this vehicle number already exists" });
+    } else {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
   }
 }
 );
@@ -1190,7 +1198,7 @@ app.post("/update-ambulance", ishospAuthenticated, async (req, res) => {
   try {
     const hosp_id = req.session.hosp_id;
     const { vehicle_number, availability } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     if (!hosp_id) {
       return res.status(401).json({ error: "Not authorized" });
     }

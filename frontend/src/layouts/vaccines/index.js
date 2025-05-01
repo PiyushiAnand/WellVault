@@ -237,19 +237,46 @@ function Vaccines() {
           </Grid>
         </Grid>
 
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth 
+            sx = {{
+              minHeight: 500, // Minimum height
+            }}
+        >
           <DialogTitle>{editingIndex !== null ? "Edit Vaccine" : "Add New Vaccine"}</DialogTitle>
-          <DialogContent>
+          <DialogContent
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+            }}
+          >
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <FormControl fullWidth required>
-                  <InputLabel id="vaccine-name-label">Vaccine Name</InputLabel>
+                <FormControl fullWidth required
+                
+                sx={{
+                  boxShadow: 3,            // Elevation
+                  borderRadius: 2,         // Rounded corners
+                  minHeight: 40,           // Minimum height
+                  width: "100%",
+                  backgroundColor: "#f9f9f9", 
+                }}
+                >
+                  <InputLabel id="vaccine-name-label"
+
+                  
+                  >Vaccine Name</InputLabel>
                   <Select
                     labelId="vaccine-name-label"
                     name="vaccine_name"
                     value={newVaccine.vaccine_name}
                     onChange={handleInputChange}
                     label="Vaccine Name"
+                    sx={{
+                      borderRadius: 2,        // Rounded corners inside
+                      minHeight: 40,          // Minimum height
+                    
+                    }}
                   >
                     {VACCINE_NAMES.map((name) => (
                       <MenuItem key={name} value={name}>

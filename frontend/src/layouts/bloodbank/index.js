@@ -140,13 +140,26 @@ function Blood() {
 
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
-          <FormControl fullWidth margin="normal" error={!!errorMessage}>
+          <FormControl fullWidth margin="normal" error={!!errorMessage}
+            sx={{
+              boxShadow: 3,            // Elevation
+              borderRadius: 2,         // Rounded corners
+              minHeight: 40,           // Minimum height
+              width: "100%",
+              backgroundColor: "#f9f9f9", 
+            }}
+          >
             <InputLabel>Blood Type</InputLabel>
             <Select
               name="blood_group"
               value={formData.blood_group}
               onChange={handleInputChange}
               label="Blood Type"
+              sx={{
+                borderRadius: 2,        // Rounded corners inside
+                 minHeight: 40,          // Minimum height
+               
+              }}
             >
               {Object.keys(BloodTypeEnum).map((key) => (
                 <MenuItem key={key} value={BloodTypeEnum[key]}>

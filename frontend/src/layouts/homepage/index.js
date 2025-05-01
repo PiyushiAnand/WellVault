@@ -108,20 +108,25 @@ const Homepage = () => {
           </MDBox>
 
           <MDTypography
-            variant="body1"
-            mt={3}  // Margin top to separate from buttons
-            sx={{
-              color: "#2196F3",
-              cursor: "pointer",
-              textDecoration: "underline",
-              "&:hover": {
-                color: "#ffffff",  // Blue color when hovered
-              },
-            }}
-            onClick={handleHospital}
-          >
-            Not a patient? Click here for hospital login
-          </MDTypography>
+  variant="body1"
+  mt={3}
+  sx={{
+    color: "#2196F3",
+    cursor: "pointer",
+    textDecoration: "underline",
+    fontWeight: 500,
+    "&:hover": {
+      color: "#ffffff",
+    },
+  }}
+  onClick={handleHospital}
+>
+  Not a patient?
+  <br />
+  <span style={{ fontWeight: 600 }}>Click here to log in as hospital staff</span>
+</MDTypography>
+
+
         </MDBox>
       </Fade>
     </MDBox>

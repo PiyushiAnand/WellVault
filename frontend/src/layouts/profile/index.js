@@ -273,21 +273,29 @@ function ProfilePage() {
               <Grid item xs={12} sm={6} key={key}>
                 {key === "blood_group" ? (
                   <TextField
-                    select
-                    fullWidth
-                    label="Blood Group"
-                    name={key}
-                    value={value}
-                    onChange={handleFormChange}
-                    error={!!errors[key]}
-                    helperText={errors[key] || ""}
-                  >
-                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                      select
+                      fullWidth
+                      label="Blood Group"
+                      name={key}
+                      value={value}
+                      onChange={handleFormChange}
+                      error={!!errors[key]}
+                      helperText={errors[key] || ""}
+                      sx={{
+                        boxShadow: 3,          // Add shadow to the TextField for elevation
+                        borderRadius: 2,       // Rounded corners
+                        backgroundColor: '#f9f9f9', // Soft background color
+                        minHeight: '40px',     // Ensures the text field has some height
+                        padding: '10px',       // Adds padding inside the text field for better spacing
+                      }}
+                    >
+                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((option) => (
+                        <MenuItem key={option} value={option} sx={{minHeight: '40px', padding: '10px'}}>
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
                 ) : key === "ongoing_treatment" ? (
                   <FormControlLabel
                     control={

@@ -35,8 +35,8 @@ function Prescriptions() {
   const [newPrescription, setNewPrescription] = useState({
     medication_name: "",
     dosage: "",
-    start_date: new Date().toISOString().split('T')[0],
-    end_date:  new Date().toISOString().split('T')[0],
+    start_date: "",
+    end_date:  "",
     prescribing_doc:""
   });
 
@@ -78,8 +78,8 @@ function Prescriptions() {
     setNewPrescription({
       medication_name: "",
       dosage: "",
-      start_date: new Date().toISOString().split('T')[0],
-      end_date:  new Date().toISOString().split('T')[0],
+      start_date: "",
+      end_date: "",
       prescribing_doc:""
     });
     setEditingIndex(null);
@@ -194,10 +194,10 @@ function Prescriptions() {
                     <strong>Dosage:</strong> {prescription.dosage}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Start Date:</strong> {prescription.start_date}
+                    <strong>Start Date:</strong> {new Date(prescription.start_date).toLocaleDateString('en-GB')}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>End Date:</strong> {prescription.end_date}
+                    <strong>End Date:</strong> {new Date(prescription.end_date).toLocaleDateString('en-GB')}
                   </Typography>
                   <Typography variant="body1">
                     <strong>Prescribing Doc:</strong> {prescription.prescribing_doc}
@@ -272,6 +272,7 @@ function Prescriptions() {
                     type="date"
                     value={newPrescription.start_date}
                     onChange={handleInputChange}
+                    InputLabelProps={{ shrink: true }}
                     required
                   />
                 </Grid>
@@ -282,6 +283,7 @@ function Prescriptions() {
                     name="end_date"
                     type="date"
                     value={newPrescription.end_date}
+                    InputLabelProps={{ shrink: true }}
                     onChange={handleInputChange}
                     required
                   />

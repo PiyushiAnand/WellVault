@@ -99,32 +99,40 @@ function Empty_Slots() {
       </MDBox>
 
       <Grid container spacing={3}>
-        {Object.entries(data).map(([key, group]) => {
-          // Filter out doctors with no available slots
-          const availableSlots = group.slots.filter((s) => !s.booked);
-          if (availableSlots.length === 0) {
-            return null; // Skip doctors with no available slots
-          }
+  {Object.keys(data).length === 0 ? (
+    <Grid item xs={12}>
+      <Typography variant="subtitle1">No doctors available for the selected date</Typography>
+    </Grid>
+  ) : (
+    Object.entries(data).map(([key, group]) => {
+      const availableSlots = group.slots.filter((s) => !s.booked);
 
-          return (
-            <Grid item xs={12} sm={6} md={4} key={key}>
-              <Card style={{ padding: 16 }}>
-                <Typography variant="h4">{group.doc_name}</Typography>
-                <Divider />
-                <Typography variant="subtitle1">Timings :</Typography>
-                <List>
-                  {availableSlots.map((s, i) => (
-                    
-                    <ListItem key={i}>
-                      <ListItemText primary={`${s.timings}`} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
+      return (
+        <Grid item xs={12} sm={6} md={4} key={key}>
+          <Card style={{ padding: 16 }}>
+            <Typography variant="h4">{group.doc_name}</Typography>
+            <Divider />
+            <Typography variant="subtitle1">Timings :</Typography>
+            <List>
+              {availableSlots.length > 0 ? (
+                availableSlots.map((s, i) => (
+                  <ListItem key={i}>
+                    <ListItemText primary={`${s.timings}`} />
+                  </ListItem>
+                ))
+              ) : (
+                <ListItem>
+                  <ListItemText primary="No available slots" />
+                </ListItem>
+              )}
+            </List>
+          </Card>
+        </Grid>
+      );
+    })
+  )}
+</Grid>
+
     </DashboardLayout>
   );
 }
