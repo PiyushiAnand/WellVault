@@ -12,10 +12,10 @@ const mime = require("mime-types");
 // PostgreSQL connection
 // NOTE: use YOUR postgres username and password here
 const pool = new Pool({
-  user: "postgres",
+  user: "whoknows",
   host: "localhost",
   database: "project",
-  password: "Aak#0907",
+  password: "whoknows",
   port: 5432,
 });
 
@@ -877,9 +877,9 @@ app.post("/hospital/signup", async (req, res) => {
 app.post("/hospital/login", async (req, res) => {
 const { hosp_id, hospital_name } = req.body;
 try {
-  const result = await pool.query("SELECT * FROM hospitals WHERE hosp_id = $1;", [
-    hosp_id,
-  ]);
+  const result = await pool.query("SELECT * FROM hospitals WHERE hosp_id = $1 and hospital_name = $2;", 
+    [hosp_id,hospital_name],
+  );
   const user = result.rows[0];
 
   if (user) {

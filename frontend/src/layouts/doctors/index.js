@@ -77,7 +77,7 @@ function Doctors() {
           </Grid>
         </Grid>
       <Typography variant="h4" gutterBottom m={2}>
-        Patient Details
+        Doctor Details
       </Typography>
       <Grid container spacing={3} padding={2}>
       {result
