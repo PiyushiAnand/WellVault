@@ -1031,7 +1031,8 @@ app.post("/appointments", isAuthenticated, async (req, res) => {
     
     const hospital_name = hosp;
     const doc_name = doc;
-    const date = new Date(a_date);  // Convert the date string to a Date object
+    const date = a_date;
+    // const date = new Date(a_date);  // Convert the date string to a Date object
     const slot_id = slot;
     
     // Check if the date is in the future
@@ -1051,7 +1052,7 @@ app.post("/appointments", isAuthenticated, async (req, res) => {
       "UPDATE Doctor_slots SET booked = true WHERE doc_id = (SELECT doc_id FROM Doctors WHERE hosp_id = (SELECT hosp_id FROM Hospitals WHERE hospital_name = $1) AND doc_name = $2) AND date = $3 AND slot_id = $4;",
       [hospital_name, doc_name, date, slot_id]
     );
-
+    console.log("Appointment booked successfully");
     res.status(200).json({ message: "Appointment booked successfully" });
   } catch (error) {
     console.error("Error booking appointment", error);
@@ -1321,3 +1322,28 @@ app.post("/delete-bloodbank", ishospAuthenticated, async (req, res) => {
   }
 }
 );
+
+// server.js or a backend API route
+const Razorpay = require("razorpay");
+
+const razorpay = new Razorpay({
+  key_id: 'YOUR_KEY_ID',
+  key_secret: 'YOUR_SECRET_KEY',
+});
+
+app.post('/create-order', async (req, res) => {
+  const { amount } = req.body;
+
+  const options = {
+    amount: amount * 100, // in paise
+    currency: "INR",
+    payment_capture: 1,
+  };
+
+  try {
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});

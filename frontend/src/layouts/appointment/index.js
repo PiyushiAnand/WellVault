@@ -120,9 +120,9 @@ function Appointments() {
         credentials: "include",
         body: JSON.stringify({ hosp:hospital.hospital_name, doc:doctor.doc_name, a_date:date, slot:slot.slot_id }),
       });
-    //   if(response.status === 400) {
-    //     alert("Please select a valid date and slot");
-    //   }
+      if(response.status === 400) {
+        alert("Please select a valid date and slot");
+      }
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.message || "Error creating appointment");
