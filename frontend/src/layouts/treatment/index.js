@@ -116,7 +116,7 @@ function Treatments() {
       
       if(response.status == 400){alert("End date can't be before start date");  return;}
       if(response.status == 300){alert("treatment already exists"); return;}
-      if(!response.ok) throw new Error("Failed to add treatment");
+      if(!response.ok) alert("Failed to add treatment");
 
       const result = await response.json();
       setTreatments([...treatments, result.treatment]);
@@ -149,10 +149,10 @@ function Treatments() {
 
         <Grid container spacing={3}>
           {treatments.map((treatment, index) => (
-            <Grid item xs={12} sm={6} md={4} key={treatment.treatment_name || index}>
+            <Grid item xs={12} sm={6} md={4} key={treatment.Treatment_name || index}>
               <Card sx={{ p: 2 }}>
                 <MDBox display="flex" justifyContent="space-between">
-                  <Typography variant="h4">{treatment.treatment_name}</Typography>
+                  <Typography variant="h4">{treatment.Treatment_name}</Typography>
                   <MDBox>
                     <IconButton onClick={() => handleEditTreatment(index)}>
                       <EditIcon />

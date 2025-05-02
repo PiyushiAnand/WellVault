@@ -114,7 +114,7 @@ CREATE TABLE Payments (
 
 -- TREATMENT 
 CREATE TABLE OngoingTreatment (
-    username VARCHAR(5) NOT NULL,
+    username VARCHAR(50) NOT NULL,
     Treatment_name VARCHAR(100) NOT NULL,
     doctor VARCHAR(50) NOT NULL,
     start_date TEXT NOT NULL,
