@@ -134,7 +134,7 @@ Our platform allows you to:
               <MDInput type="text" label="Name" name="name" fullWidth onChange={handleChange} value={formData.name} />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="date" name="dob" fullWidth onChange={handleChange} value={formData.dob} />
+              <MDInput type="date" name="dob" fullWidth onChange={handleChange} value={formData.dob} label = "Date of Birth"  InputLabelProps={{ shrink: true }}/>
             </MDBox>
             <MDBox mb={2}>
               <MDInput type="text" label="Mobile Number" name="mobile_number" fullWidth onChange={handleChange} value={formData.mobile_number} />
